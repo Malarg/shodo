@@ -30,10 +30,14 @@ func Run() {
 	})
 	defer rdb.Close()
 
-	tokensRespotiory := repository.TokensRepository{Redis: rdb}
+	tokensRepository := repository.TokensRepository{Redis: rdb}
 	usersRepository := repository.UsersRepository{Client: client}
-	authService := services.AuthService{Repository: &usersRepository, TokensRepository: &tokensRespotiory}
-	authHandler := transport.AuthHandler{Service: &authService}
+
+	tokensService := services.TokensService{TokensRepository: &tokensRepository}
+	registrationService := services.RegistrationService{Repository: &usersRepository, TokensService: &tokensService}
+	authenticationService := services.AuthenticationService{Repository: &usersRepository, TokensService: &tokensService}
+
+	authHandler := transport.AuthHandler{RegistrationService: &registrationService, AuthenticationService: &authenticationService}
 
 	r := gin.Default()
 	r.GET("/ping", transport.PingHandler)

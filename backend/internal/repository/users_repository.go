@@ -30,3 +30,9 @@ func (this *UsersRepository) DeleteUser(id primitive.ObjectID) error {
 	_, err := this.Client.Database("shodo").Collection("users").DeleteOne(nil, models.User{ID: id})
 	return err
 }
+
+func (this *UsersRepository) GetUserByEmail(email string) (models.User, error) {
+	var user models.User
+	err := this.Client.Database("shodo").Collection("users").FindOne(nil, models.User{Email: email}).Decode(&user)
+	return user, err
+}
