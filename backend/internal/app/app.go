@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func Run() {
+func Run(r *gin.Engine) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -30,6 +30,7 @@ func Run() {
 	})
 	defer rdb.Close()
 
+	//TODO: add DI?
 	tokensRepository := repository.TokensRepository{Redis: rdb}
 	usersRepository := repository.UsersRepository{Client: client}
 
@@ -39,11 +40,15 @@ func Run() {
 
 	authHandler := transport.AuthHandler{RegistrationService: &registrationService, AuthenticationService: &authenticationService}
 
-	r := gin.Default()
-	r.GET("/ping", transport.PingHandler)
-	r.POST("auth/register", authHandler.Register)
-	r.POST("auth/login", authHandler.LogIn)
-	r.POST("auth/logout", authHandler.LogOut)
+	v1 := r.Group("/api/v1")
+	{
+		auth := v1.Group("/auth")
+		auth.POST("/register", authHandler.Register)
+		auth.POST("/login", authHandler.LogIn)
+		//auth.POST("/logout", authHandler.LogOut)
+	}
+	v1.GET("/ping", transport.PingHandler)
+
 	r.Run()
 }
 

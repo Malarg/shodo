@@ -1,0 +1,1 @@
+swag init -d ./cmd/app,./internal/app,./internal/transport,./internal/models
