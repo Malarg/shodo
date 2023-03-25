@@ -6,8 +6,6 @@ import (
 	"shodo/internal/domain/helpers"
 	"shodo/internal/models"
 	"shodo/internal/repository"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
@@ -15,8 +13,9 @@ const (
 )
 
 type RegistrationService struct {
-	Repository    *repository.UsersRepository
-	TokensService *TokensService
+	Repository      repository.Users
+	TaskListService *TaskListService
+	TokensService   *TokensService
 }
 
 func (service *RegistrationService) Register(request models.RegisterUserRequest) (*models.AuthTokens, error) {
@@ -35,6 +34,7 @@ func (service *RegistrationService) Register(request models.RegisterUserRequest)
 		return nil, err
 	}
 
+	service.TaskListService.CreateDefaultTaskList(userId)
 	return tokens, nil
 }
 
@@ -55,10 +55,10 @@ func (service *RegistrationService) checkIfCanRegister(request models.RegisterUs
 	return nil
 }
 
-func (service *RegistrationService) putNewUserToDb(request models.RegisterUserRequest) (primitive.ObjectID, error) {
+func (service *RegistrationService) putNewUserToDb(request models.RegisterUserRequest) (string, error) {
 	hashedPassword, err := helpers.HashPassword(request.Password)
 	if err != nil {
-		return primitive.NilObjectID, err
+		return "", err
 	}
 
 	user := models.User{

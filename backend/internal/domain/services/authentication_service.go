@@ -9,7 +9,7 @@ import (
 )
 
 type AuthenticationService struct {
-	Repository    *repository.UsersRepository
+	Repository    repository.Users
 	TokensService *TokensService
 }
 
@@ -29,4 +29,14 @@ func (service *AuthenticationService) LogIn(request models.LoginUserRequest) (*m
 	}
 
 	return tokens, nil
+}
+
+func (service *AuthenticationService) IsAuthorized(token string) (bool, error) {
+	userId, err := helpers.GetUserIdFromToken(token)
+	tokens, err := service.TokensService.GetTokens(userId)
+	if err != nil {
+		return false, err
+	}
+
+	return tokens.Access == token, nil
 }

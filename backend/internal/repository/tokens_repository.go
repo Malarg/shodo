@@ -25,11 +25,15 @@ func (repository *TokensRepository) SaveTokens(userId string, tokens *models.Aut
 }
 
 func (repository *TokensRepository) GetTokens(userId string) (*models.AuthTokens, error) {
-	var tokens models.AuthTokens
-	err := repository.Redis.Get(userId).Scan(&tokens)
+	access, err := repository.Redis.Get(userId + "_access").Result()
 	if err != nil {
 		return nil, err
 	}
 
-	return &tokens, nil
+	refresh, err := repository.Redis.Get(userId + "_refresh").Result()
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.AuthTokens{Access: access, Refresh: refresh}, nil
 }

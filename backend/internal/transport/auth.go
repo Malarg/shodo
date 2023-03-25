@@ -12,8 +12,8 @@ import (
 //Question: where validation should be? Looks like that at service layer
 
 type AuthHandler struct {
-	RegistrationService   *services.RegistrationService
-	AuthenticationService *services.AuthenticationService
+	RegistrationService   services.Registration
+	AuthenticationService services.Authentication
 }
 
 // Register godoc

@@ -33,19 +33,26 @@ func Run(r *gin.Engine) {
 	//TODO: add DI?
 	tokensRepository := repository.TokensRepository{Redis: rdb}
 	usersRepository := repository.UsersRepository{Client: client}
+	taskListRepository := repository.TaskListRepository{Mongo: client}
 
+	tasksService := services.TaskListService{TaskListRepository: &taskListRepository}
 	tokensService := services.TokensService{TokensRepository: &tokensRepository}
-	registrationService := services.RegistrationService{Repository: &usersRepository, TokensService: &tokensService}
+	registrationService := services.RegistrationService{Repository: &usersRepository, TaskListService: &tasksService, TokensService: &tokensService}
 	authenticationService := services.AuthenticationService{Repository: &usersRepository, TokensService: &tokensService}
 
 	authHandler := transport.AuthHandler{RegistrationService: &registrationService, AuthenticationService: &authenticationService}
+	tasksHandler := transport.TaskListHandler{TaskListService: &tasksService, AuthenticationService: &authenticationService}
 
 	v1 := r.Group("/api/v1")
 	{
 		auth := v1.Group("/auth")
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.LogIn)
-		//auth.POST("/logout", authHandler.LogOut)
+
+		tasks := v1.Group("/tasks")
+		// tasks.Use(authHandler.AuthMiddleware())
+		tasks.POST("/add", tasksHandler.AddTaskToList)
+		tasks.POST("/remove", tasksHandler.DeleteTaskFromList)
 	}
 	v1.GET("/ping", transport.PingHandler)
 

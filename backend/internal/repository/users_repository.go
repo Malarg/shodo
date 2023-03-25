@@ -2,6 +2,7 @@ package repository
 
 import (
 	"shodo/internal/models"
+	mongodto "shodo/internal/repository/mongo_dto"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -11,28 +12,36 @@ type UsersRepository struct {
 	Client *mongo.Client
 }
 
-func NewUsersRepository(client *mongo.Client) *UsersRepository {
-	return &UsersRepository{Client: client}
-}
+func (this *UsersRepository) CreateUser(user models.User) (string, error) {
+	mongoUser := mongodto.User{}
+	mongoUser.FromModel(user)
 
-func (this *UsersRepository) CreateUser(user models.User) (primitive.ObjectID, error) {
-	result, err := this.Client.Database("shodo").Collection("users").InsertOne(nil, user)
-	return result.InsertedID.(primitive.ObjectID), err
+	result, err := this.getUsersCollection().InsertOne(nil, mongoUser)
+	return result.InsertedID.(primitive.ObjectID).Hex(), err
 }
 
 // TODO: checking is not repository responsibility
 func (this *UsersRepository) CheckUserExists(email string) (bool, error) {
-	count, err := this.Client.Database("shodo").Collection("users").CountDocuments(nil, models.User{Email: email})
+	count, err := this.getUsersCollection().CountDocuments(nil, mongodto.User{Email: email})
 	return count > 0, err
 }
 
-func (this *UsersRepository) DeleteUser(id primitive.ObjectID) error {
-	_, err := this.Client.Database("shodo").Collection("users").DeleteOne(nil, models.User{ID: id})
+func (this *UsersRepository) DeleteUser(id string) error {
+	mongoId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	_, err = this.getUsersCollection().DeleteOne(nil, mongodto.User{ID: mongoId})
 	return err
 }
 
 func (this *UsersRepository) GetUserByEmail(email string) (models.User, error) {
-	var user models.User
-	err := this.Client.Database("shodo").Collection("users").FindOne(nil, models.User{Email: email}).Decode(&user)
-	return user, err
+	var user mongodto.User
+	err := this.getUsersCollection().FindOne(nil, mongodto.User{Email: email}).Decode(&user)
+	return user.ToModel(), err
+}
+
+func (this *UsersRepository) getUsersCollection() *mongo.Collection {
+	return this.Client.Database("shodo").Collection("users")
 }

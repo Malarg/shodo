@@ -1,27 +1,59 @@
 package transport
 
-import "github.com/gin-gonic/gin"
+import (
+	"shodo/internal/domain/services"
+	"shodo/internal/models"
 
-func GetAllListsHandler(c *gin.Context) {
+	"github.com/gin-gonic/gin"
+)
 
+type TaskListHandler struct {
+	TaskListService       services.TaskList
+	AuthenticationService services.Authentication
 }
 
-func CreateListHandler(c *gin.Context) {
+func (handler *TaskListHandler) AddTaskToList(c *gin.Context) {
+	token := c.Request.Header.Get("Authorization")
+	isAuthorized, err := handler.AuthenticationService.IsAuthorized(token)
+	if !isAuthorized || err != nil {
+		c.JSON(401, gin.H{"error": "unauthorized"})
+		return
+	}
 
+	var request models.AddTaskRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = handler.TaskListService.AddTaskToList(&request.ListId, &request.Task, token)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{})
 }
 
-func RenameListHandler(c *gin.Context) {
+func (handler *TaskListHandler) DeleteTaskFromList(c *gin.Context) {
+	token := c.Request.Header.Get("Authorization")
+	isAuthorized, err := handler.AuthenticationService.IsAuthorized(token)
+	if !isAuthorized || err != nil {
+		c.JSON(401, gin.H{"error": "unauthorized"})
+		return
+	}
 
-}
+	var request models.RemoveTaskRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
 
-func AddUserToListHandler(c *gin.Context) {
+	err = handler.TaskListService.RemoveTaskFromList(&request.ListId, &request.Task, token)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
 
-}
-
-func RemoveUserFromListHandler(c *gin.Context) {
-
-}
-
-func DeleteListHandler(c *gin.Context) {
-
+	c.JSON(200, gin.H{})
 }
