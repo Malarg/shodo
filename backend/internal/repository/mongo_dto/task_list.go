@@ -24,10 +24,11 @@ func (this *TaskList) New() {
 
 func (this *TaskList) ToModel() models.TaskList {
 	return models.TaskList{
-		ID:    this.ID.Hex(),
-		Title: this.Title,
-		Owner: this.Owner.Hex(),
-		Tasks: dtoTasksToModelTasks(this.Tasks),
+		ID:         this.ID.Hex(),
+		Title:      this.Title,
+		Owner:      this.Owner.Hex(),
+		SharedWith: parseIdList(this.SharedWith),
+		Tasks:      dtoTasksToModelTasks(this.Tasks),
 	}
 }
 

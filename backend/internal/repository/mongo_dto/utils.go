@@ -36,3 +36,11 @@ func parseOrCreateId(id string) (primitive.ObjectID, error) {
 	}
 	return objectId, nil
 }
+
+func parseIdList(ids []primitive.ObjectID) []string {
+	idList := make([]string, len(ids))
+	for i, id := range ids {
+		idList[i] = id.Hex()
+	}
+	return idList
+}

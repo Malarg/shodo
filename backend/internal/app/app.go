@@ -53,6 +53,11 @@ func Run(r *gin.Engine) {
 		// tasks.Use(authHandler.AuthMiddleware())
 		tasks.POST("/add", tasksHandler.AddTaskToList)
 		tasks.POST("/remove", tasksHandler.DeleteTaskFromList)
+
+		share := v1.Group("/share")
+		// share.Use(authHandler.AuthMiddleware())
+		share.POST("/start", tasksHandler.StartShareWithUser)
+		share.POST("/stop", tasksHandler.StopShareWithUser)
 	}
 	v1.GET("/ping", transport.PingHandler)
 

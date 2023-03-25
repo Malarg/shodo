@@ -53,14 +53,16 @@ func (this *TaskListRepository) AddUserToList(listId string, userId string) erro
 	}
 
 	var list *mongodto.TaskList
-	this.getCollection().FindOne(nil, mongodto.TaskList{ID: mongoListId}).Decode(&list)
+	this.getCollection().FindOne(context.Background(), bson.M{"_id": mongoListId}).Decode(&list)
 	list.SharedWith = append(list.SharedWith, mongoUserId)
-	_, err = this.getCollection().UpdateOne(nil, mongodto.TaskList{ID: mongoListId}, list)
+
+	_, err = this.getCollection().UpdateOne(context.Background(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"sharedWith": list.SharedWith}})
 	if err != nil {
 		return err
 	}
 
 	return nil
+
 }
 
 func (this *TaskListRepository) RemoveUserFromList(listId string, userId string) error {
@@ -75,13 +77,14 @@ func (this *TaskListRepository) RemoveUserFromList(listId string, userId string)
 	}
 
 	var list *mongodto.TaskList
-	this.getCollection().FindOne(nil, mongodto.TaskList{ID: mongoListId}).Decode(&list)
-	for i, id := range list.SharedWith {
-		if id == mongoUserId {
+	this.getCollection().FindOne(context.Background(), bson.M{"_id": mongoListId}).Decode(&list)
+	for i, u := range list.SharedWith {
+		if u == mongoUserId {
 			list.SharedWith = append(list.SharedWith[:i], list.SharedWith[i+1:]...)
 		}
 	}
-	_, err = this.getCollection().UpdateOne(nil, mongodto.TaskList{ID: mongoListId}, list)
+
+	_, err = this.getCollection().UpdateOne(context.Background(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"sharedWith": list.SharedWith}})
 	if err != nil {
 		return err
 	}
@@ -154,4 +157,43 @@ func (this *TaskListRepository) GetTaskList(id *string) (models.TaskList, error)
 
 func (this *TaskListRepository) getCollection() *mongo.Collection {
 	return this.Mongo.Database("shodo").Collection("task_lists")
+}
+
+func (this *TaskListRepository) GetTaskListsForUser(userId *string) ([]models.TaskList, error) {
+	mongoUserId, err := primitive.ObjectIDFromHex(*userId)
+	if err != nil {
+		return nil, err
+	}
+
+	var lists []*mongodto.TaskList
+	var result []models.TaskList
+	cursor, err := this.getCollection().Find(nil, bson.M{"owner": mongoUserId})
+	defer cursor.Close(nil)
+
+	if err != nil {
+		return nil, err
+	}
+	err = cursor.All(nil, &lists)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, list := range lists {
+		result = append(result, list.ToModel())
+	}
+
+	cursor, err = this.getCollection().Find(nil, bson.M{"sharedWith": bson.M{"$in": []primitive.ObjectID{mongoUserId}}})
+	if err != nil {
+		return nil, err
+	}
+	err = cursor.All(nil, &lists)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, list := range lists {
+		result = append(result, list.ToModel())
+	}
+
+	return result, nil
 }

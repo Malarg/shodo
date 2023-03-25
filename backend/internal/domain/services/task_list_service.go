@@ -74,3 +74,59 @@ func (service *TaskListService) IsEditListAllowed(listId *string, userToken stri
 
 	return false, nil
 }
+
+func (service *TaskListService) StartShareWithUser(listId *string, teammateId *string, userToken string) error {
+	userId, err := helpers.GetUserIdFromToken(userToken)
+	if err != nil {
+		return err
+	}
+
+	if userId == *teammateId {
+		return errors.New("can't share with yourself")
+	}
+
+	list, err := service.TaskListRepository.GetTaskList(listId)
+	if err != nil {
+		return err
+	}
+
+	if list.Owner != userId {
+		return errors.New("only list owner can share list")
+	}
+
+	if helpers.Contains(list.SharedWith, *teammateId) {
+		return errors.New("user already shared")
+	}
+
+	err = service.TaskListRepository.AddUserToList(*listId, *teammateId)
+
+	return err
+}
+
+func (service *TaskListService) StopShareWithUser(listId *string, teammateId *string, userToken string) error {
+	userId, err := helpers.GetUserIdFromToken(userToken)
+	if err != nil {
+		return err
+	}
+
+	if userId == *teammateId {
+		return errors.New("can't stop share with yourself")
+	}
+
+	list, err := service.TaskListRepository.GetTaskList(listId)
+	if err != nil {
+		return err
+	}
+
+	if list.Owner != userId {
+		return errors.New("only list owner can stop share list")
+	}
+
+	if !helpers.Contains(list.SharedWith, *teammateId) {
+		return errors.New("user not shared")
+	}
+
+	err = service.TaskListRepository.RemoveUserFromList(*listId, *teammateId)
+
+	return err
+}
