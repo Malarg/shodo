@@ -41,7 +41,7 @@ func (service *TaskListService) AddTaskToList(listId *string, task *models.Task,
 	return err
 }
 
-func (service *TaskListService) RemoveTaskFromList(listId *string, task *models.Task, userToken string) error {
+func (service *TaskListService) RemoveTaskFromList(listId *string, taskId *string, userToken string) error {
 	isEditListAllowed, err := service.IsEditListAllowed(listId, userToken)
 
 	if err != nil {
@@ -52,7 +52,7 @@ func (service *TaskListService) RemoveTaskFromList(listId *string, task *models.
 		return errors.New(kNotAllowed)
 	}
 
-	err = service.TaskListRepository.RemoveTaskFromList(listId, task)
+	err = service.TaskListRepository.RemoveTaskFromList(listId, taskId)
 
 	return err
 }

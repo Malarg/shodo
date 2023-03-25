@@ -1,6 +1,6 @@
 package models
 
 type RemoveTaskRequest struct {
-	Task   Task   `json:"task"`
+	TaskId string `json:"task_id"`
 	ListId string `json:"list_id"`
 }

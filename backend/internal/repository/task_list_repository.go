@@ -112,14 +112,16 @@ func (this *TaskListRepository) AddTaskToList(listId *string, task *models.Task)
 	return nil
 }
 
-func (this *TaskListRepository) RemoveTaskFromList(listId *string, task *models.Task) error {
+func (this *TaskListRepository) RemoveTaskFromList(listId *string, taskId *string) error {
 	mongoListId, err := primitive.ObjectIDFromHex(*listId)
 	if err != nil {
 		return err
 	}
 
-	taskDto := mongodto.Task{}
-	taskDto.FromModel(*task)
+	mongoTaskId, err := primitive.ObjectIDFromHex(*taskId)
+	if err != nil {
+		return err
+	}
 
 	var list *mongodto.TaskList
 	err = this.getCollection().FindOne(context.Background(), bson.M{"_id": mongoListId}).Decode(&list)
@@ -127,7 +129,7 @@ func (this *TaskListRepository) RemoveTaskFromList(listId *string, task *models.
 		return err
 	}
 	for i, t := range list.Tasks {
-		if t.ID == taskDto.ID {
+		if t.ID == mongoTaskId {
 			list.Tasks = append(list.Tasks[:i], list.Tasks[i+1:]...)
 		}
 	}

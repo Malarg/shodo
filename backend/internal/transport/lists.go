@@ -49,7 +49,7 @@ func (handler *TaskListHandler) DeleteTaskFromList(c *gin.Context) {
 		return
 	}
 
-	err = handler.TaskListService.RemoveTaskFromList(&request.ListId, &request.Task, token)
+	err = handler.TaskListService.RemoveTaskFromList(&request.ListId, &request.TaskId, token)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return

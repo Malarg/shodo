@@ -19,7 +19,7 @@ type TaskList interface {
 	CreateDefaultTaskList(ownerId string)
 	CreateTaskList(list *models.TaskList)
 	AddTaskToList(listId *string, task *models.Task, userToken string) error
-	RemoveTaskFromList(listId *string, task *models.Task, userToken string) error
+	RemoveTaskFromList(listId *string, taskId *string, userToken string) error
 	IsEditListAllowed(listId *string, userToken string) (bool, error)
 }
 

@@ -8,7 +8,7 @@ type TaskList interface {
 	AddUserToList(listId string, userId string) error
 	RemoveUserFromList(listId string, userId string) error
 	AddTaskToList(listId *string, task *models.Task) error
-	RemoveTaskFromList(listId *string, task *models.Task) error
+	RemoveTaskFromList(listId *string, taskId *string) error
 	GetTaskList(id *string) (models.TaskList, error)
 }
 
