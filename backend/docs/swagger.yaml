@@ -1,11 +1,20 @@
 basePath: /api/v1
 definitions:
+  models.AddTaskRequest:
+    properties:
+      list_id:
+        type: string
+      task:
+        $ref: '#/definitions/models.Task'
+    type: object
   models.AuthTokens:
     properties:
       access:
         type: string
       refresh:
         type: string
+    type: object
+  models.EmptyResponse:
     type: object
   models.Error:
     properties:
@@ -34,6 +43,27 @@ definitions:
     - email
     - password
     - username
+    type: object
+  models.RemoveTaskRequest:
+    properties:
+      list_id:
+        type: string
+      task_id:
+        type: string
+    type: object
+  models.ShareUserRequest:
+    properties:
+      list_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.Task:
+    properties:
+      id:
+        type: string
+      title:
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -94,4 +124,108 @@ paths:
       summary: Register new user
       tags:
       - auth
+  /api/v1/lists/share/start:
+    post:
+      consumes:
+      - application/json
+      description: Start share list with user
+      parameters:
+      - description: Share data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.ShareUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.EmptyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.Error'
+      summary: Start share list with user
+      tags:
+      - lists
+  /api/v1/lists/share/stop:
+    post:
+      consumes:
+      - application/json
+      description: Stop share list with user
+      parameters:
+      - description: Share data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.ShareUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.EmptyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.Error'
+      summary: Stop share list with user
+      tags:
+      - lists
+  /api/v1/tasks/add:
+    post:
+      consumes:
+      - application/json
+      description: Add task to list
+      parameters:
+      - description: Task data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.EmptyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.Error'
+      summary: Add task to list
+      tags:
+      - lists
+  /api/v1/tasks/remove:
+    post:
+      consumes:
+      - application/json
+      description: Delete task from list
+      parameters:
+      - description: Task data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/models.RemoveTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.EmptyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.Error'
+      summary: Delete task from list
+      tags:
+      - lists
 swagger: "2.0"
