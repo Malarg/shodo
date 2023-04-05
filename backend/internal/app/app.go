@@ -2,6 +2,9 @@ package app
 
 import (
 	"context"
+	"flag"
+	"fmt"
+	"shodo/internal/config"
 	"shodo/internal/domain/services"
 	"shodo/internal/repository"
 	"shodo/internal/transport"
@@ -14,22 +17,30 @@ import (
 )
 
 func Run(r *gin.Engine) {
-	// config, err := config.Init()
-	// if err != nil {
-	// 	panic(err)
-	// }
+	var configName string
+	flag.StringVar(&configName, "configName", "docker", "config file name")
+	flag.Parse()
+	config, err := config.Init(configName)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	mongoUrl := fmt.Sprintf("mongodb://admin:password@%s:27017", config.MongoHost)
+	fmt.Println(mongoUrl)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoUrl))
 	if err != nil {
 		panic(err)
 	}
 	defer disconnectMongoDB(ctx, client)
 
+	redisAddr := fmt.Sprintf("%s:6379", config.RedisHost)
+	fmt.Println(redisAddr)
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     redisAddr,
 		Password: "",
 		DB:       0,
 	})

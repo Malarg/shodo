@@ -5,11 +5,13 @@ import "github.com/spf13/viper"
 type Config struct {
 	DbName               string `mapstructure:"db_name"`
 	DefaultTaskListTitle string `mapstructure:"default_task_list_title"`
+	MongoHost            string `mapstructure:"mongo_host"`
+	RedisHost            string `mapstructure:"redis_host"`
 }
 
-func Init() (*Config, error) {
+func Init(configName string) (*Config, error) {
 	viper.AddConfigPath("configs")
-	viper.SetConfigName("main")
+	viper.SetConfigName(configName)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
