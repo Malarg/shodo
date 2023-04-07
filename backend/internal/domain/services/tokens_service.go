@@ -2,8 +2,8 @@ package services
 
 import (
 	"shodo/internal/domain/helpers"
-	"shodo/internal/models"
 	"shodo/internal/repository"
+	"shodo/models"
 )
 
 type TokensService struct {

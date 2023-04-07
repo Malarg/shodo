@@ -2,8 +2,8 @@ package app
 
 import (
 	"context"
-	"flag"
 	"fmt"
+	"os"
 	"shodo/internal/config"
 	"shodo/internal/domain/services"
 	"shodo/internal/repository"
@@ -14,12 +14,17 @@ import (
 	"github.com/go-redis/redis"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/zap"
 )
 
 func Run(r *gin.Engine) {
-	var configName string
-	flag.StringVar(&configName, "configName", "docker", "config file name")
-	flag.Parse()
+
+	Logger, err := zap.NewProduction()
+	if err != nil {
+		panic(err)
+	}
+
+	configName := os.Getenv("CONFIG_NAME")
 	config, err := config.Init(configName)
 	if err != nil {
 		fmt.Println(err)
@@ -28,7 +33,6 @@ func Run(r *gin.Engine) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
 	mongoUrl := fmt.Sprintf("mongodb://admin:password@%s:27017", config.MongoHost)
 	fmt.Println(mongoUrl)
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoUrl))
@@ -48,15 +52,15 @@ func Run(r *gin.Engine) {
 
 	//TODO: add DI?
 	tokensRepository := repository.TokensRepository{Redis: rdb}
-	usersRepository := repository.UsersRepository{Client: client}
-	taskListRepository := repository.TaskListRepository{Mongo: client}
+	usersRepository := repository.UsersRepository{Client: client, Config: config}
+	taskListRepository := repository.TaskListRepository{Mongo: client, Config: config}
 
 	tasksService := services.TaskListService{TaskListRepository: &taskListRepository}
 	tokensService := services.TokensService{TokensRepository: &tokensRepository}
 	registrationService := services.RegistrationService{Repository: &usersRepository, TaskListService: &tasksService, TokensService: &tokensService}
 	authenticationService := services.AuthenticationService{Repository: &usersRepository, TokensService: &tokensService}
 
-	authHandler := transport.AuthHandler{RegistrationService: &registrationService, AuthenticationService: &authenticationService}
+	authHandler := transport.AuthHandler{RegistrationService: &registrationService, AuthenticationService: &authenticationService, Logger: Logger}
 	tasksHandler := transport.TaskListHandler{TaskListService: &tasksService, AuthenticationService: &authenticationService}
 
 	v1 := r.Group("/api/v1")

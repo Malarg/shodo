@@ -1,4 +1,4 @@
-FROM golang:1.18 AS builder
+FROM golang:1.19 AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ FROM alpine:latest
 WORKDIR /root
 
 COPY --from=builder /app/main .
-COPY --from=builder /app/configs/ /root/configs/ 
+COPY --from=builder /app/configs/ /root/configs/
 
 EXPOSE 8080
 

@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"shodo/internal/models"
+	"shodo/models"
 	"time"
 
 	"github.com/golang-jwt/jwt"

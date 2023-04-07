@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"shodo/internal/domain/helpers"
-	"shodo/internal/models"
 	"shodo/internal/repository"
+	"shodo/models"
 )
 
 type AuthenticationService struct {

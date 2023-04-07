@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"shodo/internal/models"
+	"shodo/internal/config"
 	mongodto "shodo/internal/repository/mongo_dto"
+	"shodo/models"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -10,6 +11,7 @@ import (
 
 type UsersRepository struct {
 	Client *mongo.Client
+	Config *config.Config
 }
 
 func (this *UsersRepository) CreateUser(user models.User) (string, error) {
@@ -43,5 +45,5 @@ func (this *UsersRepository) GetUserByEmail(email string) (models.User, error) {
 }
 
 func (this *UsersRepository) getUsersCollection() *mongo.Collection {
-	return this.Client.Database("shodo").Collection("users")
+	return this.Client.Database(this.Config.DbName).Collection("users")
 }

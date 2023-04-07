@@ -1,6 +1,6 @@
 package repository
 
-import "shodo/internal/models"
+import "shodo/models"
 
 type TaskList interface {
 	CreateTaskList(taskList *models.TaskList) error

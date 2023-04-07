@@ -1,7 +1,7 @@
 package mongodto
 
 import (
-	"shodo/internal/models"
+	"shodo/models"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

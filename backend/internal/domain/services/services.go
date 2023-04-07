@@ -1,7 +1,7 @@
 package services
 
 import (
-	"shodo/internal/models"
+	"shodo/models"
 )
 
 //go:generate mockgen -source=services.go -destination=mocks/mock.go

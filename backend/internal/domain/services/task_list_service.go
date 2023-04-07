@@ -3,8 +3,8 @@ package services
 import (
 	"errors"
 	"shodo/internal/domain/helpers"
-	"shodo/internal/models"
 	"shodo/internal/repository"
+	"shodo/models"
 )
 
 const (

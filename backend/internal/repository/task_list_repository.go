@@ -2,7 +2,8 @@ package repository
 
 import (
 	"context"
-	"shodo/internal/models"
+	"shodo/internal/config"
+	"shodo/models"
 
 	mongodto "shodo/internal/repository/mongo_dto"
 
@@ -12,7 +13,8 @@ import (
 )
 
 type TaskListRepository struct {
-	Mongo *mongo.Client
+	Mongo  *mongo.Client
+	Config *config.Config
 }
 
 func (this *TaskListRepository) CreateTaskList(taskList *models.TaskList) error {
@@ -156,7 +158,7 @@ func (this *TaskListRepository) GetTaskList(id *string) (models.TaskList, error)
 }
 
 func (this *TaskListRepository) getCollection() *mongo.Collection {
-	return this.Mongo.Database("shodo").Collection("task_lists")
+	return this.Mongo.Database(this.Config.DbName).Collection("task_lists")
 }
 
 func (this *TaskListRepository) GetTaskListsForUser(userId *string) ([]models.TaskList, error) {

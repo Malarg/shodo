@@ -8,6 +8,8 @@ services:
     depends_on:
       - mongodb
       - redis
+    environment:
+      CONFIG_NAME: ${CONFIG_NAME}
 
   mongodb:
     image: mongo:latest

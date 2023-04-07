@@ -3,9 +3,10 @@ package transport
 import (
 	"net/http"
 	"shodo/internal/domain/services"
-	"shodo/internal/models"
+	"shodo/models"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 //Read params from query and send it to service layer.
@@ -14,6 +15,7 @@ import (
 type AuthHandler struct {
 	RegistrationService   services.Registration
 	AuthenticationService services.Authentication
+	Logger                *zap.Logger
 }
 
 // Register godoc
@@ -29,12 +31,14 @@ type AuthHandler struct {
 func (handler *AuthHandler) Register(c *gin.Context) {
 	var request models.RegisterUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		handler.Logger.Error("Error while binding json", zap.Error(err), zap.Any("request", c.Request.Body))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})
 		return
 	}
 
 	tokens, err := handler.RegistrationService.Register(request)
 	if err != nil {
+		handler.Logger.Error("Error while registering user", zap.Error(err), zap.Any("request", request))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})
 		return
 	}

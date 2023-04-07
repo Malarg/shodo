@@ -6,7 +6,7 @@ package mock_services
 
 import (
 	reflect "reflect"
-	models "shodo/internal/models"
+	models "shodo/models"
 
 	gomock "github.com/golang/mock/gomock"
 	primitive "go.mongodb.org/mongo-driver/bson/primitive"

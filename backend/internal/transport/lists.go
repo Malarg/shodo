@@ -2,7 +2,7 @@ package transport
 
 import (
 	"shodo/internal/domain/services"
-	"shodo/internal/models"
+	"shodo/models"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"shodo/internal/models"
+	"shodo/models"
 
 	"github.com/go-redis/redis"
 )
