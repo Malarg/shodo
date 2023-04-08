@@ -9,9 +9,6 @@ import (
 	"go.uber.org/zap"
 )
 
-//Read params from query and send it to service layer.
-//Question: where validation should be? Looks like that at service layer
-
 type AuthHandler struct {
 	RegistrationService   services.Registration
 	AuthenticationService services.Authentication
@@ -59,12 +56,14 @@ func (handler *AuthHandler) Register(c *gin.Context) {
 func (handler *AuthHandler) LogIn(c *gin.Context) {
 	var request models.LoginUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		handler.Logger.Error("Error while binding json", zap.Error(err), zap.Any("request", c.Request.Body))
 		c.JSON(http.StatusBadGateway, models.Error{Message: err.Error()})
 		return
 	}
 
 	tokens, err := handler.AuthenticationService.LogIn(request)
 	if err != nil {
+		handler.Logger.Error("Error while logging in user", zap.Error(err), zap.Any("request", request))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})
 		return
 	}

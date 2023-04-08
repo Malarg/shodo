@@ -13,12 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type APITestSuite struct {
-	suite.Suite
-	Config *config.Config
-	db     *mongo.Client
-}
-
 func (s *APITestSuite) SetupSuite() {
 	var err error
 	s.Config, err = config.Init("main")
@@ -38,10 +32,7 @@ func (s *APITestSuite) SetupSuite() {
 
 	s.db = client
 
-	err = s.db.Database(s.Config.DbName).Drop(ctx)
-	if err != nil {
-		s.FailNow("Failed to drop database", err)
-	}
+	s.testData.Init()
 }
 
 func (s *APITestSuite) SetupTest() {
