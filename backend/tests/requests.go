@@ -53,3 +53,15 @@ func (s *APITestSuite) sendLoginRequest(request models.LoginUserRequest) (*http.
 	client := &http.Client{}
 	return client.Do(req)
 }
+
+func (s *APITestSuite) sendGetListsRequest(token string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", baseUrl+"/api/v1/lists", nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set(ContentType, ApplicationJSON)
+	req.Header.Set(Authorization, token)
+
+	client := &http.Client{}
+	return client.Do(req)
+}

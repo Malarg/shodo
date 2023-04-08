@@ -161,14 +161,14 @@ func (this *TaskListRepository) getCollection() *mongo.Collection {
 	return this.Mongo.Database(this.Config.DbName).Collection("task_lists")
 }
 
-func (this *TaskListRepository) GetTaskListsForUser(userId *string) ([]models.TaskList, error) {
-	mongoUserId, err := primitive.ObjectIDFromHex(*userId)
+func (this *TaskListRepository) GetTaskLists(userId string) ([]models.TaskListShort, error) {
+	mongoUserId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
 		return nil, err
 	}
 
 	var lists []*mongodto.TaskList
-	var result []models.TaskList
+	var result []models.TaskListShort
 	cursor, err := this.getCollection().Find(nil, bson.M{"owner": mongoUserId})
 	defer cursor.Close(nil)
 
@@ -181,7 +181,7 @@ func (this *TaskListRepository) GetTaskListsForUser(userId *string) ([]models.Ta
 	}
 
 	for _, list := range lists {
-		result = append(result, list.ToModel())
+		result = append(result, list.ToShortModel())
 	}
 
 	cursor, err = this.getCollection().Find(nil, bson.M{"sharedWith": bson.M{"$in": []primitive.ObjectID{mongoUserId}}})
@@ -194,7 +194,7 @@ func (this *TaskListRepository) GetTaskListsForUser(userId *string) ([]models.Ta
 	}
 
 	for _, list := range lists {
-		result = append(result, list.ToModel())
+		result = append(result, list.ToShortModel())
 	}
 
 	return result, nil

@@ -12,6 +12,32 @@ type TaskListHandler struct {
 	AuthenticationService services.Authentication
 }
 
+// GetLists godoc
+// @Summary Get all lists for a user
+// @Description Get all lists for a user
+// @Tags lists
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} models.GetListsResponse
+// @Failure 400 {object} models.Error
+// @Router /api/v1/lists [get]
+func (handler *TaskListHandler) GetLists(c *gin.Context) {
+	token := c.Request.Header.Get("Authorization")
+	isAuthorized, err := handler.AuthenticationService.IsAuthorized(token)
+	if !isAuthorized || err != nil {
+		c.JSON(401, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	lists, err := handler.TaskListService.GetTaskLists(token)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, models.GetListsResponse{Lists: lists})
+}
+
 // AddTaskToList godoc
 // @Summary Add task to list
 // @Description Add task to list

@@ -69,6 +69,10 @@ func Run(r *gin.Engine) {
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.LogIn)
 
+		lists := v1.Group("/lists")
+		// lists.Use(authHandler.AuthMiddleware())
+		lists.GET("/", tasksHandler.GetLists)
+
 		tasks := v1.Group("/tasks")
 		// tasks.Use(authHandler.AuthMiddleware())
 		tasks.POST("/add", tasksHandler.AddTaskToList)

@@ -7,3 +7,8 @@ type TaskList struct {
 	SharedWith []string `json:"shared_with"`
 	Tasks      []Task   `json:"tasks"`
 }
+
+type TaskListShort struct {
+	ID    string `json:"id"`
+	Title string `json:"title"`
+}

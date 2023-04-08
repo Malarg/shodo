@@ -32,6 +32,13 @@ func (this *TaskList) ToModel() models.TaskList {
 	}
 }
 
+func (this *TaskList) ToShortModel() models.TaskListShort {
+	return models.TaskListShort{
+		ID:    this.ID.Hex(),
+		Title: this.Title,
+	}
+}
+
 func (this *TaskList) FromModel(taskList models.TaskList) error {
 	var err error
 	this.ID, err = parseOrCreateId(taskList.ID)

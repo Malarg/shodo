@@ -25,6 +25,20 @@ func (service *TaskListService) CreateTaskList(list *models.TaskList) {
 	service.TaskListRepository.CreateTaskList(list)
 }
 
+func (service *TaskListService) GetTaskLists(userToken string) ([]models.TaskListShort, error) {
+	userId, err := helpers.GetUserIdFromToken(userToken)
+	if err != nil {
+		return nil, err
+	}
+
+	lists, err := service.TaskListRepository.GetTaskLists(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return lists, nil
+}
+
 func (service *TaskListService) AddTaskToList(listId *string, task *models.Task, userToken string) error {
 	isEditListAllowed, err := service.IsEditListAllowed(listId, userToken)
 
