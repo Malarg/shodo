@@ -45,6 +45,30 @@ func (this *UsersRepository) GetUserByEmail(email string) (models.User, error) {
 	return user.ToModel(), err
 }
 
+func (this *UsersRepository) GetAllUsers(id string) ([]models.UserShort, error) {
+	var users []models.UserShort
+
+	cursor, err := this.getUsersCollection().Find(context.TODO(), mongodto.User{})
+	if err != nil {
+		return users, err
+	}
+
+	for cursor.Next(context.TODO()) {
+		var user mongodto.UserShort
+		err = cursor.Decode(&user)
+		if err != nil {
+			return users, err
+		}
+
+		if user.ID.Hex() == id {
+			continue
+		}
+		users = append(users, user.ToModel())
+	}
+
+	return users, nil
+}
+
 func (this *UsersRepository) getUsersCollection() *mongo.Collection {
 	return this.Client.Database(this.Config.DbName).Collection("users")
 }

@@ -34,3 +34,15 @@ func (this *User) FromModel(user models.User) error {
 
 	return nil
 }
+
+type UserShort struct {
+	ID       primitive.ObjectID `bson:"_id,omitempty"`
+	Username string             `bson:"username,omitempty"`
+}
+
+func (this *UserShort) ToModel() models.UserShort {
+	return models.UserShort{
+		ID:       this.ID.Hex(),
+		Username: this.Username,
+	}
+}

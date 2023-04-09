@@ -27,6 +27,10 @@ type TaskList interface {
 	StopShareWithUser(listId *string, teammateId *string, userToken string) error
 }
 
+type Users interface {
+	GetAllUsers(userToken string) ([]models.UserShort, error)
+}
+
 type Tokens interface {
 	GenerateAndSaveTokens(userId *string) (*models.AuthTokens, error)
 	GetTokens(userId string) (*models.AuthTokens, error)

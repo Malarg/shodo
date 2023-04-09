@@ -17,5 +17,6 @@ type Users interface {
 	CreateUser(user models.User) (string, error)
 	CheckUserExists(email string) (bool, error)
 	DeleteUser(id string) error
+	GetAllUsers(id string) ([]models.UserShort, error)
 	GetUserByEmail(email string) (models.User, error)
 }

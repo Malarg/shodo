@@ -57,11 +57,13 @@ func Run(r *gin.Engine) {
 
 	tasksService := services.TaskListService{TaskListRepository: &taskListRepository}
 	tokensService := services.TokensService{TokensRepository: &tokensRepository}
+	usersService := services.UsersService{UsersRepository: &usersRepository}
 	registrationService := services.RegistrationService{Repository: &usersRepository, TaskListService: &tasksService, TokensService: &tokensService}
 	authenticationService := services.AuthenticationService{Repository: &usersRepository, TokensService: &tokensService}
 
 	authHandler := transport.AuthHandler{RegistrationService: &registrationService, AuthenticationService: &authenticationService, Logger: Logger}
 	tasksHandler := transport.TaskListHandler{TaskListService: &tasksService, AuthenticationService: &authenticationService, Logger: Logger}
+	usersHandler := transport.UsersHandler{UsersService: &usersService, AuthenticationService: &authenticationService, Logger: Logger}
 
 	v1 := r.Group("/api/v1")
 	{
@@ -83,6 +85,10 @@ func Run(r *gin.Engine) {
 		// share.Use(authHandler.AuthMiddleware())
 		share.POST("/start", tasksHandler.StartShareWithUser)
 		share.POST("/stop", tasksHandler.StopShareWithUser)
+
+		users := v1.Group("/users")
+		// users.Use(authHandler.AuthMiddleware())
+		users.GET("/", usersHandler.GetAllUsers)
 	}
 	v1.GET("/ping", transport.PingHandler)
 
