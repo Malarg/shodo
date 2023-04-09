@@ -17,25 +17,25 @@ type TaskListService struct {
 	AuthenticationService *AuthenticationService
 }
 
-func (service *TaskListService) CreateDefaultTaskList(ownerId string) {
-	service.TaskListRepository.CreateTaskList(&models.TaskList{Title: kDefaultTaskListTitle, Owner: ownerId})
+func (this *TaskListService) CreateDefaultTaskList(ownerId string) {
+	this.TaskListRepository.CreateTaskList(&models.TaskList{Title: kDefaultTaskListTitle, Owner: ownerId})
 }
 
-func (service *TaskListService) CreateTaskList(list *models.TaskList) {
-	service.TaskListRepository.CreateTaskList(list)
+func (this *TaskListService) CreateTaskList(list *models.TaskList) {
+	this.TaskListRepository.CreateTaskList(list)
 }
 
-func (service *TaskListService) GetTaskLists(userToken string) ([]models.TaskListShort, error) {
+func (this *TaskListService) GetTaskLists(userToken string) ([]models.TaskListShort, error) {
 	userId, err := helpers.GetUserIdFromToken(userToken)
 	if err != nil {
 		return nil, err
 	}
 
-	return service.TaskListRepository.GetTaskLists(userId)
+	return this.TaskListRepository.GetTaskLists(userId)
 }
 
-func (service *TaskListService) GetTaskList(listId *string, userToken string) (models.TaskList, error) {
-	isEditListAllowed, err := service.IsEditListAllowed(listId, userToken)
+func (this *TaskListService) GetTaskList(listId *string, userToken string) (models.TaskList, error) {
+	isEditListAllowed, err := this.IsEditListAllowed(listId, userToken)
 	if err != nil {
 		return models.TaskList{}, err
 	}
@@ -44,11 +44,11 @@ func (service *TaskListService) GetTaskList(listId *string, userToken string) (m
 		return models.TaskList{}, errors.New(kNotAllowed)
 	}
 
-	return service.TaskListRepository.GetTaskList(listId)
+	return this.TaskListRepository.GetTaskList(listId)
 }
 
-func (service *TaskListService) AddTaskToList(listId *string, task *models.Task, userToken string) (*string, error) {
-	isEditListAllowed, err := service.IsEditListAllowed(listId, userToken)
+func (this *TaskListService) AddTaskToList(listId *string, task *models.Task, userToken string) (*string, error) {
+	isEditListAllowed, err := this.IsEditListAllowed(listId, userToken)
 
 	if err != nil {
 		return nil, err
@@ -58,11 +58,11 @@ func (service *TaskListService) AddTaskToList(listId *string, task *models.Task,
 		return nil, errors.New(kNotAllowed)
 	}
 
-	return service.TaskListRepository.AddTaskToList(listId, task)
+	return this.TaskListRepository.AddTaskToList(listId, task)
 }
 
-func (service *TaskListService) RemoveTaskFromList(listId *string, taskId *string, userToken string) error {
-	isEditListAllowed, err := service.IsEditListAllowed(listId, userToken)
+func (this *TaskListService) RemoveTaskFromList(listId *string, taskId *string, userToken string) error {
+	isEditListAllowed, err := this.IsEditListAllowed(listId, userToken)
 
 	if err != nil {
 		return err
@@ -72,13 +72,13 @@ func (service *TaskListService) RemoveTaskFromList(listId *string, taskId *strin
 		return errors.New(kNotAllowed)
 	}
 
-	err = service.TaskListRepository.RemoveTaskFromList(listId, taskId)
+	err = this.TaskListRepository.RemoveTaskFromList(listId, taskId)
 
 	return err
 }
 
-func (service *TaskListService) IsEditListAllowed(listId *string, userToken string) (bool, error) {
-	list, err := service.TaskListRepository.GetTaskList(listId)
+func (this *TaskListService) IsEditListAllowed(listId *string, userToken string) (bool, error) {
+	list, err := this.TaskListRepository.GetTaskList(listId)
 	if err != nil {
 		return false, err
 	}
@@ -95,7 +95,7 @@ func (service *TaskListService) IsEditListAllowed(listId *string, userToken stri
 	return false, nil
 }
 
-func (service *TaskListService) StartShareWithUser(listId *string, teammateId *string, userToken string) error {
+func (this *TaskListService) StartShareWithUser(listId *string, teammateId *string, userToken string) error {
 	userId, err := helpers.GetUserIdFromToken(userToken)
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func (service *TaskListService) StartShareWithUser(listId *string, teammateId *s
 		return errors.New("can't share with yourself")
 	}
 
-	list, err := service.TaskListRepository.GetTaskList(listId)
+	list, err := this.TaskListRepository.GetTaskList(listId)
 	if err != nil {
 		return err
 	}
@@ -118,12 +118,12 @@ func (service *TaskListService) StartShareWithUser(listId *string, teammateId *s
 		return errors.New("user already shared")
 	}
 
-	err = service.TaskListRepository.AddUserToList(*listId, *teammateId)
+	err = this.TaskListRepository.AddUserToList(*listId, *teammateId)
 
 	return err
 }
 
-func (service *TaskListService) StopShareWithUser(listId *string, teammateId *string, userToken string) error {
+func (this *TaskListService) StopShareWithUser(listId *string, teammateId *string, userToken string) error {
 	userId, err := helpers.GetUserIdFromToken(userToken)
 	if err != nil {
 		return err
@@ -133,7 +133,7 @@ func (service *TaskListService) StopShareWithUser(listId *string, teammateId *st
 		return errors.New("can't stop share with yourself")
 	}
 
-	list, err := service.TaskListRepository.GetTaskList(listId)
+	list, err := this.TaskListRepository.GetTaskList(listId)
 	if err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func (service *TaskListService) StopShareWithUser(listId *string, teammateId *st
 		return errors.New("user not shared")
 	}
 
-	err = service.TaskListRepository.RemoveUserFromList(*listId, *teammateId)
+	err = this.TaskListRepository.RemoveUserFromList(*listId, *teammateId)
 
 	return err
 }

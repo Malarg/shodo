@@ -13,8 +13,8 @@ type AuthenticationService struct {
 	TokensService *TokensService
 }
 
-func (service *AuthenticationService) LogIn(request models.LoginUserRequest) (*models.AuthTokens, error) {
-	user, err := service.Repository.GetUserByEmail(request.Email)
+func (this *AuthenticationService) LogIn(request models.LoginUserRequest) (*models.AuthTokens, error) {
+	user, err := this.Repository.GetUserByEmail(request.Email)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("user with email %s not found", request.Email))
 	}
@@ -23,7 +23,7 @@ func (service *AuthenticationService) LogIn(request models.LoginUserRequest) (*m
 		return nil, errors.New("invalid credentials")
 	}
 
-	tokens, err := service.TokensService.GenerateAndSaveTokens(user.ID)
+	tokens, err := this.TokensService.GenerateAndSaveTokens(user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -31,9 +31,9 @@ func (service *AuthenticationService) LogIn(request models.LoginUserRequest) (*m
 	return tokens, nil
 }
 
-func (service *AuthenticationService) IsAuthorized(token string) (bool, error) {
+func (this *AuthenticationService) IsAuthorized(token string) (bool, error) {
 	userId, err := helpers.GetUserIdFromToken(token)
-	tokens, err := service.TokensService.GetTokens(userId)
+	tokens, err := this.TokensService.GetTokens(userId)
 	if err != nil {
 		return false, err
 	}

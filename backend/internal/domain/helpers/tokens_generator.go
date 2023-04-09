@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"os"
 	"shodo/models"
 	"time"
 
@@ -10,8 +11,9 @@ import (
 const (
 	AccessTokenLifeTime  = 3600
 	RefreshTokenLifeTime = 86400
-	Secret               = "aWeSoMeSecReTStRing@3!" //TODO: investigate and move to env
 )
+
+var Secret = os.Getenv("JWT_SECRET")
 
 func GenerateTokens(userId string) (models.AuthTokens, error) {
 	accessToken, err := generateAccessToken(userId)

@@ -57,10 +57,10 @@ func (this *TaskListRepository) AddUserToList(listId string, userId string) erro
 	}
 
 	var list *mongodto.TaskList
-	this.getCollection().FindOne(context.Background(), bson.M{"_id": mongoListId}).Decode(&list)
+	this.getCollection().FindOne(context.TODO(), bson.M{"_id": mongoListId}).Decode(&list)
 	list.SharedWith = append(list.SharedWith, mongoUserId)
 
-	_, err = this.getCollection().UpdateOne(context.Background(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"sharedWith": list.SharedWith}})
+	_, err = this.getCollection().UpdateOne(context.TODO(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"sharedWith": list.SharedWith}})
 	if err != nil {
 		return err
 	}
@@ -81,14 +81,14 @@ func (this *TaskListRepository) RemoveUserFromList(listId string, userId string)
 	}
 
 	var list *mongodto.TaskList
-	this.getCollection().FindOne(context.Background(), bson.M{"_id": mongoListId}).Decode(&list)
+	this.getCollection().FindOne(context.TODO(), bson.M{"_id": mongoListId}).Decode(&list)
 	for i, u := range list.SharedWith {
 		if u == mongoUserId {
 			list.SharedWith = append(list.SharedWith[:i], list.SharedWith[i+1:]...)
 		}
 	}
 
-	_, err = this.getCollection().UpdateOne(context.Background(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"sharedWith": list.SharedWith}})
+	_, err = this.getCollection().UpdateOne(context.TODO(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"sharedWith": list.SharedWith}})
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (this *TaskListRepository) RemoveUserFromList(listId string, userId string)
 	return nil
 }
 
-func (r *TaskListRepository) AddTaskToList(listId *string, task *models.Task) (*string, error) {
+func (this *TaskListRepository) AddTaskToList(listId *string, task *models.Task) (*string, error) {
 	if listId == nil {
 		return nil, errors.New("listId can not be nil")
 	}
@@ -109,12 +109,12 @@ func (r *TaskListRepository) AddTaskToList(listId *string, task *models.Task) (*
 	taskDto.FromModel(*task)
 
 	var list *mongodto.TaskList
-	err = r.getCollection().FindOne(context.TODO(), bson.M{"_id": mongoListId}).Decode(&list)
+	err = this.getCollection().FindOne(context.TODO(), bson.M{"_id": mongoListId}).Decode(&list)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find task list: %w", err)
 	}
 	list.Tasks = append(list.Tasks, taskDto)
-	result, err := r.getCollection().UpdateOne(context.Background(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"tasks": list.Tasks}})
+	result, err := this.getCollection().UpdateOne(context.TODO(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"tasks": list.Tasks}})
 	if err != nil {
 		return nil, fmt.Errorf("failed to update task list: %w", err)
 	}
@@ -140,7 +140,7 @@ func (this *TaskListRepository) RemoveTaskFromList(listId *string, taskId *strin
 	}
 
 	var list *mongodto.TaskList
-	err = this.getCollection().FindOne(context.Background(), bson.M{"_id": mongoListId}).Decode(&list)
+	err = this.getCollection().FindOne(context.TODO(), bson.M{"_id": mongoListId}).Decode(&list)
 	if err != nil {
 		return err
 	}
@@ -150,7 +150,7 @@ func (this *TaskListRepository) RemoveTaskFromList(listId *string, taskId *strin
 		}
 	}
 
-	_, err = this.getCollection().UpdateOne(context.Background(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"tasks": list.Tasks}})
+	_, err = this.getCollection().UpdateOne(context.TODO(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"tasks": list.Tasks}})
 	if err != nil {
 		return err
 	}

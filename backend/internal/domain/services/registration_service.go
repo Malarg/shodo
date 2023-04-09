@@ -18,28 +18,28 @@ type RegistrationService struct {
 	TokensService   *TokensService
 }
 
-func (service *RegistrationService) Register(request models.RegisterUserRequest) (*models.AuthTokens, error) {
-	if err := service.checkIfCanRegister(request); err != nil {
+func (this *RegistrationService) Register(request models.RegisterUserRequest) (*models.AuthTokens, error) {
+	if err := this.checkIfCanRegister(request); err != nil {
 		return nil, err
 	}
 
-	userId, err := service.putNewUserToDb(request)
+	userId, err := this.putNewUserToDb(request)
 	if err != nil {
 		return nil, err
 	}
 
-	tokens, err := service.TokensService.GenerateAndSaveTokens(userId)
+	tokens, err := this.TokensService.GenerateAndSaveTokens(userId)
 	if err != nil {
-		service.Repository.DeleteUser(userId)
+		this.Repository.DeleteUser(userId)
 		return nil, err
 	}
 
-	service.TaskListService.CreateDefaultTaskList(userId)
+	this.TaskListService.CreateDefaultTaskList(userId)
 	return tokens, nil
 }
 
-func (service *RegistrationService) checkIfCanRegister(request models.RegisterUserRequest) error {
-	userExists, err := service.Repository.CheckUserExists(request.Email)
+func (this *RegistrationService) checkIfCanRegister(request models.RegisterUserRequest) error {
+	userExists, err := this.Repository.CheckUserExists(request.Email)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (service *RegistrationService) checkIfCanRegister(request models.RegisterUs
 	return nil
 }
 
-func (service *RegistrationService) putNewUserToDb(request models.RegisterUserRequest) (string, error) {
+func (this *RegistrationService) putNewUserToDb(request models.RegisterUserRequest) (string, error) {
 	hashedPassword, err := helpers.HashPassword(request.Password)
 	if err != nil {
 		return "", err
@@ -67,5 +67,5 @@ func (service *RegistrationService) putNewUserToDb(request models.RegisterUserRe
 		Password: hashedPassword,
 	}
 
-	return service.Repository.CreateUser(user)
+	return this.Repository.CreateUser(user)
 }

@@ -1,6 +1,8 @@
 package helpers
 
 import (
+	"errors"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -9,7 +11,10 @@ const (
 )
 
 func HashPassword(password string) (string, error) {
-	//TODO: does not accept password more than 72 bytes, check length
+	if len(password) > 36 {
+		ErrPasswordTooLong := errors.New("password length should not exceed 72 bytes")
+		return "", ErrPasswordTooLong
+	}
 	//TODO: add salt
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), DefaultCost)
 	return string(bytes), err

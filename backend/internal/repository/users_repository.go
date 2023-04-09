@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"shodo/internal/config"
 	mongodto "shodo/internal/repository/mongo_dto"
 	"shodo/models"
@@ -18,13 +19,13 @@ func (this *UsersRepository) CreateUser(user models.User) (string, error) {
 	mongoUser := mongodto.User{}
 	mongoUser.FromModel(user)
 
-	result, err := this.getUsersCollection().InsertOne(nil, mongoUser)
+	result, err := this.getUsersCollection().InsertOne(context.TODO(), mongoUser)
 	return result.InsertedID.(primitive.ObjectID).Hex(), err
 }
 
 // TODO: checking is not repository responsibility
 func (this *UsersRepository) CheckUserExists(email string) (bool, error) {
-	count, err := this.getUsersCollection().CountDocuments(nil, mongodto.User{Email: email})
+	count, err := this.getUsersCollection().CountDocuments(context.TODO(), mongodto.User{Email: email})
 	return count > 0, err
 }
 
@@ -34,13 +35,13 @@ func (this *UsersRepository) DeleteUser(id string) error {
 		return err
 	}
 
-	_, err = this.getUsersCollection().DeleteOne(nil, mongodto.User{ID: mongoId})
+	_, err = this.getUsersCollection().DeleteOne(context.TODO(), mongodto.User{ID: mongoId})
 	return err
 }
 
 func (this *UsersRepository) GetUserByEmail(email string) (models.User, error) {
 	var user mongodto.User
-	err := this.getUsersCollection().FindOne(nil, mongodto.User{Email: email}).Decode(&user)
+	err := this.getUsersCollection().FindOne(context.TODO(), mongodto.User{Email: email}).Decode(&user)
 	return user.ToModel(), err
 }
 
