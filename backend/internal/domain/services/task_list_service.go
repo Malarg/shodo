@@ -31,28 +31,34 @@ func (service *TaskListService) GetTaskLists(userToken string) ([]models.TaskLis
 		return nil, err
 	}
 
-	lists, err := service.TaskListRepository.GetTaskLists(userId)
+	return service.TaskListRepository.GetTaskLists(userId)
+}
+
+func (service *TaskListService) GetTaskList(listId *string, userToken string) (models.TaskList, error) {
+	isEditListAllowed, err := service.IsEditListAllowed(listId, userToken)
+	if err != nil {
+		return models.TaskList{}, err
+	}
+
+	if !isEditListAllowed {
+		return models.TaskList{}, errors.New(kNotAllowed)
+	}
+
+	return service.TaskListRepository.GetTaskList(listId)
+}
+
+func (service *TaskListService) AddTaskToList(listId *string, task *models.Task, userToken string) (*string, error) {
+	isEditListAllowed, err := service.IsEditListAllowed(listId, userToken)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return lists, nil
-}
-
-func (service *TaskListService) AddTaskToList(listId *string, task *models.Task, userToken string) error {
-	isEditListAllowed, err := service.IsEditListAllowed(listId, userToken)
-
-	if err != nil {
-		return err
-	}
-
 	if !isEditListAllowed {
-		return errors.New(kNotAllowed)
+		return nil, errors.New(kNotAllowed)
 	}
 
-	err = service.TaskListRepository.AddTaskToList(listId, task)
-
-	return err
+	return service.TaskListRepository.AddTaskToList(listId, task)
 }
 
 func (service *TaskListService) RemoveTaskFromList(listId *string, taskId *string, userToken string) error {

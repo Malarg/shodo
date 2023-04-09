@@ -11,20 +11,20 @@ type Task struct {
 	Title string             `bson:"title,omitempty"`
 }
 
-func (this *Task) ToModel() models.Task {
+func (t *Task) ToModel() models.Task {
 	return models.Task{
-		ID:    this.ID.Hex(),
-		Title: this.Title,
+		ID:    t.ID.Hex(),
+		Title: t.Title,
 	}
 }
 
-func (this *Task) FromModel(task models.Task) error {
+func (t *Task) FromModel(task models.Task) error {
 	var err error
-	this.ID, err = parseOrCreateId(task.ID)
+	t.ID, err = parseOrCreateId(task.ID)
 	if err != nil {
 		return err
 	}
 
-	this.Title = task.Title
+	t.Title = task.Title
 	return nil
 }

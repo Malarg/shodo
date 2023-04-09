@@ -61,7 +61,7 @@ func Run(r *gin.Engine) {
 	authenticationService := services.AuthenticationService{Repository: &usersRepository, TokensService: &tokensService}
 
 	authHandler := transport.AuthHandler{RegistrationService: &registrationService, AuthenticationService: &authenticationService, Logger: Logger}
-	tasksHandler := transport.TaskListHandler{TaskListService: &tasksService, AuthenticationService: &authenticationService}
+	tasksHandler := transport.TaskListHandler{TaskListService: &tasksService, AuthenticationService: &authenticationService, Logger: Logger}
 
 	v1 := r.Group("/api/v1")
 	{
@@ -72,6 +72,7 @@ func Run(r *gin.Engine) {
 		lists := v1.Group("/lists")
 		// lists.Use(authHandler.AuthMiddleware())
 		lists.GET("/", tasksHandler.GetLists)
+		lists.GET("/:id", tasksHandler.GetTaskList)
 
 		tasks := v1.Group("/tasks")
 		// tasks.Use(authHandler.AuthMiddleware())

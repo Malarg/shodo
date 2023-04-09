@@ -5,11 +5,13 @@ import (
 	"shodo/models"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type TaskListHandler struct {
 	TaskListService       services.TaskList
 	AuthenticationService services.Authentication
+	Logger                *zap.Logger
 }
 
 // GetLists godoc
@@ -31,6 +33,7 @@ func (handler *TaskListHandler) GetLists(c *gin.Context) {
 
 	lists, err := handler.TaskListService.GetTaskLists(token)
 	if err != nil {
+		handler.Logger.Error("Error while getting lists", zap.Error(err))
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
@@ -45,7 +48,7 @@ func (handler *TaskListHandler) GetLists(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param data body models.AddTaskRequest true "Task data"
-// @Success 200 {object} models.EmptyResponse
+// @Success 200 {object} models.IdResponse
 // @Failure 400 {object} models.Error
 // @Router /api/v1/tasks/add [post]
 func (handler *TaskListHandler) AddTaskToList(c *gin.Context) {
@@ -58,17 +61,19 @@ func (handler *TaskListHandler) AddTaskToList(c *gin.Context) {
 
 	var request models.AddTaskRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		handler.Logger.Error("Error while binding add task json", zap.Error(err), zap.Any("request", c.Request.Body))
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = handler.TaskListService.AddTaskToList(&request.ListId, &request.Task, token)
+	res, err := handler.TaskListService.AddTaskToList(&request.ListId, &request.Task, token)
 	if err != nil {
+		handler.Logger.Error("Error while adding task to list", zap.Error(err), zap.Any("request", request))
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	c.JSON(200, models.IdResponse{Id: *res})
 }
 
 // DeleteTaskFromList godoc
@@ -91,17 +96,48 @@ func (handler *TaskListHandler) DeleteTaskFromList(c *gin.Context) {
 
 	var request models.RemoveTaskRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		handler.Logger.Error("Error while binding delete task json", zap.Error(err), zap.Any("request", c.Request.Body))
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
 	err = handler.TaskListService.RemoveTaskFromList(&request.ListId, &request.TaskId, token)
 	if err != nil {
+		handler.Logger.Error("Error while removing task from list", zap.Error(err), zap.Any("request", request))
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(200, gin.H{})
+}
+
+// GetTaskList godoc
+// @Summary Get tasks by list id
+// @Description Get tasks by list id
+// @Tags lists
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} models.GetTaskListResponse
+// @Failure 400 {object} models.Error
+// @Router /api/v1/list/:id [post]
+func (handler *TaskListHandler) GetTaskList(c *gin.Context) {
+	token := c.Request.Header.Get("Authorization")
+	isAuthorized, err := handler.AuthenticationService.IsAuthorized(token)
+	if !isAuthorized || err != nil {
+		c.JSON(401, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	listId := c.Param("id")
+
+	list, err := handler.TaskListService.GetTaskList(&listId, token)
+	if err != nil {
+		handler.Logger.Error("Error while getting list", zap.Error(err), zap.Any("listId", listId))
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, models.GetTaskListResponse{List: list})
 }
 
 // StartShareWithUser godoc
@@ -124,12 +160,14 @@ func (handler *TaskListHandler) StartShareWithUser(c *gin.Context) {
 
 	var request models.ShareUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		handler.Logger.Error("Error while binding start share json", zap.Error(err), zap.Any("request", c.Request.Body))
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
 	err = handler.TaskListService.StartShareWithUser(&request.ListId, &request.UserId, token)
 	if err != nil {
+		handler.Logger.Error("Error while sharing list with user", zap.Error(err), zap.Any("request", request))
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
@@ -157,12 +195,14 @@ func (handler *TaskListHandler) StopShareWithUser(c *gin.Context) {
 
 	var request models.ShareUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		handler.Logger.Error("Error while binding sop share json", zap.Error(err), zap.Any("request", c.Request.Body))
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
 	err = handler.TaskListService.StopShareWithUser(&request.ListId, &request.UserId, token)
 	if err != nil {
+		handler.Logger.Error("Error while stop share list with user", zap.Error(err), zap.Any("request", request))
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}

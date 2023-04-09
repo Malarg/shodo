@@ -17,9 +17,10 @@ type Registration interface {
 
 type TaskList interface {
 	CreateDefaultTaskList(ownerId string)
+	GetTaskList(listId *string, userToken string) (models.TaskList, error)
 	GetTaskLists(userToken string) ([]models.TaskListShort, error)
 	CreateTaskList(list *models.TaskList)
-	AddTaskToList(listId *string, task *models.Task, userToken string) error
+	AddTaskToList(listId *string, task *models.Task, userToken string) (*string, error)
 	RemoveTaskFromList(listId *string, taskId *string, userToken string) error
 	IsEditListAllowed(listId *string, userToken string) (bool, error)
 	StartShareWithUser(listId *string, teammateId *string, userToken string) error

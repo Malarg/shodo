@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"shodo/internal/config"
 	"shodo/models"
 
@@ -94,27 +96,36 @@ func (this *TaskListRepository) RemoveUserFromList(listId string, userId string)
 	return nil
 }
 
-func (this *TaskListRepository) AddTaskToList(listId *string, task *models.Task) error {
+func (r *TaskListRepository) AddTaskToList(listId *string, task *models.Task) (*string, error) {
+	if listId == nil {
+		return nil, errors.New("listId can not be nil")
+	}
 	mongoListId, err := primitive.ObjectIDFromHex(*listId)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("failed to convertListId to ObjectId: %w", err)
 	}
 
 	taskDto := mongodto.Task{}
 	taskDto.FromModel(*task)
 
 	var list *mongodto.TaskList
-	err = this.getCollection().FindOne(context.Background(), bson.M{"_id": mongoListId}).Decode(&list)
+	err = r.getCollection().FindOne(context.TODO(), bson.M{"_id": mongoListId}).Decode(&list)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("failed to find task list: %w", err)
 	}
 	list.Tasks = append(list.Tasks, taskDto)
-	_, err = this.getCollection().UpdateOne(context.Background(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"tasks": list.Tasks}})
+	result, err := r.getCollection().UpdateOne(context.Background(), bson.M{"_id": mongoListId}, bson.M{"$set": bson.M{"tasks": list.Tasks}})
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("failed to update task list: %w", err)
 	}
 
-	return nil
+	if result.ModifiedCount == 0 {
+		return nil, errors.New("Failed to add task to database")
+	}
+
+	id := taskDto.ID.Hex()
+
+	return &id, nil
 }
 
 func (this *TaskListRepository) RemoveTaskFromList(listId *string, taskId *string) error {
