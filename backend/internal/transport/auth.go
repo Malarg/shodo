@@ -25,17 +25,17 @@ type AuthHandler struct {
 // @Success 200 {object} models.AuthTokens
 // @Failure 400 {object} models.Error
 // @Router /api/v1/auth/register [post]
-func (handler *AuthHandler) Register(c *gin.Context) {
+func (this *AuthHandler) Register(c *gin.Context) {
 	var request models.RegisterUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		handler.Logger.Error("Error while binding json", zap.Error(err), zap.Any("request", c.Request.Body))
+		this.Logger.Error("Error while binding json", zap.Error(err), zap.Any("request", c.Request.Body))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})
 		return
 	}
 
-	tokens, err := handler.RegistrationService.Register(request)
+	tokens, err := this.RegistrationService.Register(request)
 	if err != nil {
-		handler.Logger.Error("Error while registering user", zap.Error(err), zap.Any("request", request))
+		this.Logger.Error("Error while registering user", zap.Error(err), zap.Any("request", request))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})
 		return
 	}
@@ -53,17 +53,17 @@ func (handler *AuthHandler) Register(c *gin.Context) {
 // @Success 200 {object} models.AuthTokens
 // @Failure 400 {object} models.Error
 // @Router /api/v1/auth/login [post]
-func (handler *AuthHandler) LogIn(c *gin.Context) {
+func (this *AuthHandler) LogIn(c *gin.Context) {
 	var request models.LoginUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		handler.Logger.Error("Error while binding json", zap.Error(err), zap.Any("request", c.Request.Body))
-		c.JSON(http.StatusBadGateway, models.Error{Message: err.Error()})
+		this.Logger.Error("Error while binding json", zap.Error(err), zap.Any("request", c.Request.Body))
+		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})
 		return
 	}
 
-	tokens, err := handler.AuthenticationService.LogIn(request)
+	tokens, err := this.AuthenticationService.LogIn(request)
 	if err != nil {
-		handler.Logger.Error("Error while logging in user", zap.Error(err), zap.Any("request", request))
+		this.Logger.Error("Error while logging in user", zap.Error(err), zap.Any("request", request))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})
 		return
 	}
@@ -71,6 +71,6 @@ func (handler *AuthHandler) LogIn(c *gin.Context) {
 	c.JSON(http.StatusOK, tokens)
 }
 
-func (handler *AuthHandler) LogOut(c *gin.Context) {
+func (this *AuthHandler) LogOut(c *gin.Context) {
 
 }

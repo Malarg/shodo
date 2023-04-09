@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"net/http"
 	"shodo/internal/domain/services"
 	"shodo/models"
 
@@ -14,6 +15,10 @@ type TaskListHandler struct {
 	Logger                *zap.Logger
 }
 
+const (
+	Authorization = "Authorization"
+)
+
 // GetLists godoc
 // @Summary Get all lists for a user
 // @Description Get all lists for a user
@@ -23,22 +28,22 @@ type TaskListHandler struct {
 // @Success 200 {object} models.GetListsResponse
 // @Failure 400 {object} models.Error
 // @Router /api/v1/lists [get]
-func (handler *TaskListHandler) GetLists(c *gin.Context) {
-	token := c.Request.Header.Get("Authorization")
-	isAuthorized, err := handler.AuthenticationService.IsAuthorized(token)
+func (this *TaskListHandler) GetLists(c *gin.Context) {
+	token := c.Request.Header.Get(Authorization)
+	isAuthorized, err := this.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(401, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
-	lists, err := handler.TaskListService.GetTaskLists(token)
+	lists, err := this.TaskListService.GetTaskLists(token)
 	if err != nil {
-		handler.Logger.Error("Error while getting lists", zap.Error(err))
-		c.JSON(400, gin.H{"error": err.Error()})
+		this.Logger.Error("Error while getting lists", zap.Error(err))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, models.GetListsResponse{Lists: lists})
+	c.JSON(http.StatusOK, models.GetListsResponse{Lists: lists})
 }
 
 // AddTaskToList godoc
@@ -51,29 +56,29 @@ func (handler *TaskListHandler) GetLists(c *gin.Context) {
 // @Success 200 {object} models.IdResponse
 // @Failure 400 {object} models.Error
 // @Router /api/v1/tasks/add [post]
-func (handler *TaskListHandler) AddTaskToList(c *gin.Context) {
-	token := c.Request.Header.Get("Authorization")
-	isAuthorized, err := handler.AuthenticationService.IsAuthorized(token)
+func (this *TaskListHandler) AddTaskToList(c *gin.Context) {
+	token := c.Request.Header.Get(Authorization)
+	isAuthorized, err := this.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(401, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
 	var request models.AddTaskRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		handler.Logger.Error("Error while binding add task json", zap.Error(err), zap.Any("request", c.Request.Body))
-		c.JSON(400, gin.H{"error": err.Error()})
+		this.Logger.Error("Error while binding add task json", zap.Error(err), zap.Any("request", c.Request.Body))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	res, err := handler.TaskListService.AddTaskToList(&request.ListId, &request.Task, token)
+	res, err := this.TaskListService.AddTaskToList(&request.ListId, &request.Task, token)
 	if err != nil {
-		handler.Logger.Error("Error while adding task to list", zap.Error(err), zap.Any("request", request))
-		c.JSON(400, gin.H{"error": err.Error()})
+		this.Logger.Error("Error while adding task to list", zap.Error(err), zap.Any("request", request))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, models.IdResponse{Id: *res})
+	c.JSON(http.StatusOK, models.IdResponse{Id: *res})
 }
 
 // DeleteTaskFromList godoc
@@ -86,29 +91,29 @@ func (handler *TaskListHandler) AddTaskToList(c *gin.Context) {
 // @Success 200 {object} models.EmptyResponse
 // @Failure 400 {object} models.Error
 // @Router /api/v1/tasks/remove [post]
-func (handler *TaskListHandler) DeleteTaskFromList(c *gin.Context) {
-	token := c.Request.Header.Get("Authorization")
-	isAuthorized, err := handler.AuthenticationService.IsAuthorized(token)
+func (this *TaskListHandler) DeleteTaskFromList(c *gin.Context) {
+	token := c.Request.Header.Get(Authorization)
+	isAuthorized, err := this.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(401, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
 	var request models.RemoveTaskRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		handler.Logger.Error("Error while binding delete task json", zap.Error(err), zap.Any("request", c.Request.Body))
-		c.JSON(400, gin.H{"error": err.Error()})
+		this.Logger.Error("Error while binding delete task json", zap.Error(err), zap.Any("request", c.Request.Body))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = handler.TaskListService.RemoveTaskFromList(&request.ListId, &request.TaskId, token)
+	err = this.TaskListService.RemoveTaskFromList(&request.ListId, &request.TaskId, token)
 	if err != nil {
-		handler.Logger.Error("Error while removing task from list", zap.Error(err), zap.Any("request", request))
-		c.JSON(400, gin.H{"error": err.Error()})
+		this.Logger.Error("Error while removing task from list", zap.Error(err), zap.Any("request", request))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // GetTaskList godoc
@@ -120,24 +125,24 @@ func (handler *TaskListHandler) DeleteTaskFromList(c *gin.Context) {
 // @Success 200 {object} models.GetTaskListResponse
 // @Failure 400 {object} models.Error
 // @Router /api/v1/list/:id [post]
-func (handler *TaskListHandler) GetTaskList(c *gin.Context) {
-	token := c.Request.Header.Get("Authorization")
-	isAuthorized, err := handler.AuthenticationService.IsAuthorized(token)
+func (this *TaskListHandler) GetTaskList(c *gin.Context) {
+	token := c.Request.Header.Get(Authorization)
+	isAuthorized, err := this.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(401, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
 	listId := c.Param("id")
 
-	list, err := handler.TaskListService.GetTaskList(&listId, token)
+	list, err := this.TaskListService.GetTaskList(&listId, token)
 	if err != nil {
-		handler.Logger.Error("Error while getting list", zap.Error(err), zap.Any("listId", listId))
-		c.JSON(400, gin.H{"error": err.Error()})
+		this.Logger.Error("Error while getting list", zap.Error(err), zap.Any("listId", listId))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, models.GetTaskListResponse{List: list})
+	c.JSON(http.StatusOK, models.GetTaskListResponse{List: list})
 }
 
 // StartShareWithUser godoc
@@ -150,29 +155,29 @@ func (handler *TaskListHandler) GetTaskList(c *gin.Context) {
 // @Success 200 {object} models.EmptyResponse
 // @Failure 400 {object} models.Error
 // @Router /api/v1/lists/share/start [post]
-func (handler *TaskListHandler) StartShareWithUser(c *gin.Context) {
-	token := c.Request.Header.Get("Authorization")
-	isAuthorized, err := handler.AuthenticationService.IsAuthorized(token)
+func (this *TaskListHandler) StartShareWithUser(c *gin.Context) {
+	token := c.Request.Header.Get(Authorization)
+	isAuthorized, err := this.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(401, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
 	var request models.ShareUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		handler.Logger.Error("Error while binding start share json", zap.Error(err), zap.Any("request", c.Request.Body))
-		c.JSON(400, gin.H{"error": err.Error()})
+		this.Logger.Error("Error while binding start share json", zap.Error(err), zap.Any("request", c.Request.Body))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = handler.TaskListService.StartShareWithUser(&request.ListId, &request.UserId, token)
+	err = this.TaskListService.StartShareWithUser(&request.ListId, &request.UserId, token)
 	if err != nil {
-		handler.Logger.Error("Error while sharing list with user", zap.Error(err), zap.Any("request", request))
-		c.JSON(400, gin.H{"error": err.Error()})
+		this.Logger.Error("Error while sharing list with user", zap.Error(err), zap.Any("request", request))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // StopShareWithUser godoc
@@ -185,27 +190,27 @@ func (handler *TaskListHandler) StartShareWithUser(c *gin.Context) {
 // @Success 200 {object} models.EmptyResponse
 // @Failure 400 {object} models.Error
 // @Router /api/v1/lists/share/stop [post]
-func (handler *TaskListHandler) StopShareWithUser(c *gin.Context) {
-	token := c.Request.Header.Get("Authorization")
-	isAuthorized, err := handler.AuthenticationService.IsAuthorized(token)
+func (this *TaskListHandler) StopShareWithUser(c *gin.Context) {
+	token := c.Request.Header.Get(Authorization)
+	isAuthorized, err := this.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(401, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
 	var request models.ShareUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		handler.Logger.Error("Error while binding sop share json", zap.Error(err), zap.Any("request", c.Request.Body))
-		c.JSON(400, gin.H{"error": err.Error()})
+		this.Logger.Error("Error while binding sop share json", zap.Error(err), zap.Any("request", c.Request.Body))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = handler.TaskListService.StopShareWithUser(&request.ListId, &request.UserId, token)
+	err = this.TaskListService.StopShareWithUser(&request.ListId, &request.UserId, token)
 	if err != nil {
-		handler.Logger.Error("Error while stop share list with user", zap.Error(err), zap.Any("request", request))
-		c.JSON(400, gin.H{"error": err.Error()})
+		this.Logger.Error("Error while stop share list with user", zap.Error(err), zap.Any("request", request))
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, gin.H{})
+	c.JSON(http.StatusOK, gin.H{})
 }
