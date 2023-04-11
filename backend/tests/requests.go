@@ -100,3 +100,24 @@ func (s *APITestSuite) sendGetTasksRequest(listId string, token string) (*http.R
 func (s *APITestSuite) sendRemoveTaskRequest(request models.RemoveTaskRequest, token string) (*http.Response, error) {
 	return s.sendJSONRequest("POST", "/api/v1/tasks/remove", request, &token)
 }
+
+func (s *APITestSuite) sendGetUsersRequest(token string) (*http.Response, error) {
+	return s.sendRequest("GET", "/api/v1/users", nil, &token)
+}
+
+func (s *APITestSuite) getAllUsers(token string) ([]models.UserShort, error) {
+	resp, err := s.sendGetUsersRequest(token)
+	defer resp.Body.Close()
+
+	var response []models.UserShort
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+func (s *APITestSuite) sendStartShareListRequest(request models.ShareListRequest, token string) (*http.Response, error) {
+	return s.sendJSONRequest("POST", "/api/v1/share/start", request, &token)
+}

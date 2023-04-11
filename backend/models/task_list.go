@@ -11,4 +11,5 @@ type TaskList struct {
 type TaskListShort struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`
+	Owner string `json:"owner"`
 }

@@ -154,7 +154,7 @@ func (this *TaskListHandler) GetTaskList(c *gin.Context) {
 // @Param data body models.ShareUserRequest true "Share data"
 // @Success 200 {object} models.EmptyResponse
 // @Failure 400 {object} models.Error
-// @Router /api/v1/lists/share/start [post]
+// @Router /api/v1/share/start [post]
 func (this *TaskListHandler) StartShareWithUser(c *gin.Context) {
 	token := c.Request.Header.Get(Authorization)
 	isAuthorized, err := this.AuthenticationService.IsAuthorized(token)
@@ -163,7 +163,7 @@ func (this *TaskListHandler) StartShareWithUser(c *gin.Context) {
 		return
 	}
 
-	var request models.ShareUserRequest
+	var request models.ShareListRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		this.Logger.Error("Error while binding start share json", zap.Error(err), zap.Any("request", c.Request.Body))
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -189,7 +189,7 @@ func (this *TaskListHandler) StartShareWithUser(c *gin.Context) {
 // @Param data body models.ShareUserRequest true "Share data"
 // @Success 200 {object} models.EmptyResponse
 // @Failure 400 {object} models.Error
-// @Router /api/v1/lists/share/stop [post]
+// @Router /api/v1/share/stop [post]
 func (this *TaskListHandler) StopShareWithUser(c *gin.Context) {
 	token := c.Request.Header.Get(Authorization)
 	isAuthorized, err := this.AuthenticationService.IsAuthorized(token)
@@ -198,7 +198,7 @@ func (this *TaskListHandler) StopShareWithUser(c *gin.Context) {
 		return
 	}
 
-	var request models.ShareUserRequest
+	var request models.ShareListRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		this.Logger.Error("Error while binding sop share json", zap.Error(err), zap.Any("request", c.Request.Body))
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

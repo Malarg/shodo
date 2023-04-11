@@ -52,6 +52,7 @@ func (this *UsersRepository) GetAllUsers(id string) ([]models.UserShort, error) 
 	if err != nil {
 		return users, err
 	}
+	defer cursor.Close(context.TODO())
 
 	for cursor.Next(context.TODO()) {
 		var user mongodto.UserShort

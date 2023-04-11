@@ -36,6 +36,7 @@ func (this *TaskList) ToShortModel() models.TaskListShort {
 	return models.TaskListShort{
 		ID:    this.ID.Hex(),
 		Title: this.Title,
+		Owner: this.Owner.Hex(),
 	}
 }
 

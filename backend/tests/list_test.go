@@ -9,17 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// + 1. Get all lists for a user
-// + 2. Try to get all tasks for a list
-// + 3. Add task to a user
-// + 4. Delete task
-// 5. Share list with another user
-// 6. Stop sharing list with user
-// 7. Try to add task to list which someone shared
-// 8. Try to add task to list which has not access
-// 9. Try to remove task remove list which has not access
-// 10. Try to get all tasks from list which has not access
-
 func (s *APITestSuite) TestGetLists() {
 	s.T().Run("Get all lists for a user", func(t *testing.T) {
 		registerRequest := s.testData.registerModels.johnDoe

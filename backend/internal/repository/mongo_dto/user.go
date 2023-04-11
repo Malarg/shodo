@@ -38,11 +38,13 @@ func (this *User) FromModel(user models.User) error {
 type UserShort struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty"`
 	Username string             `bson:"username,omitempty"`
+	Email    string             `bson:"email,omitempty"`
 }
 
 func (this *UserShort) ToModel() models.UserShort {
 	return models.UserShort{
 		ID:       this.ID.Hex(),
 		Username: this.Username,
+		Email:    this.Email,
 	}
 }

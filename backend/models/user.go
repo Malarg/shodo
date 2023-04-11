@@ -10,4 +10,5 @@ type User struct {
 type UserShort struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
+	Email    string `json:"email"`
 }
