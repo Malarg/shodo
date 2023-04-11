@@ -17,8 +17,8 @@ type TaskListService struct {
 	AuthenticationService *AuthenticationService
 }
 
-func (this *TaskListService) CreateDefaultTaskList(ownerId string) {
-	this.TaskListRepository.CreateTaskList(&models.TaskList{Title: kDefaultTaskListTitle, Owner: ownerId})
+func (this *TaskListService) CreateDefaultTaskList(username, ownerId string) {
+	this.TaskListRepository.CreateTaskList(&models.TaskList{Title: username + " " + kDefaultTaskListTitle, Owner: ownerId})
 }
 
 func (this *TaskListService) CreateTaskList(list *models.TaskList) {

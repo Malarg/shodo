@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// 1. Share list with another user
+// + 1. Share list with another user
 // 2. Stop sharing list with user
 // 3. Try to add task to list which someone shared
 // 4. Try to add task to list which has not access

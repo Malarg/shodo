@@ -16,7 +16,7 @@ type Registration interface {
 }
 
 type TaskList interface {
-	CreateDefaultTaskList(ownerId string)
+	CreateDefaultTaskList(username string, ownerId string)
 	GetTaskList(listId *string, userToken string) (models.TaskList, error)
 	GetTaskLists(userToken string) ([]models.TaskListShort, error)
 	CreateTaskList(list *models.TaskList)

@@ -34,7 +34,7 @@ func (this *RegistrationService) Register(request models.RegisterUserRequest) (*
 		return nil, err
 	}
 
-	this.TaskListService.CreateDefaultTaskList(userId)
+	this.TaskListService.CreateDefaultTaskList(request.Username, userId)
 	return tokens, nil
 }
 
