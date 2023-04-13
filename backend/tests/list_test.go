@@ -26,7 +26,7 @@ func (s *APITestSuite) TestGetLists() {
 		require.NoError(t, err)
 
 		require.NotEmpty(t, lists.Lists, "Expected lists in the response")
-		require.Equal(t, s.Config.DefaultTaskListTitle, lists.Lists[0].Title)
+		require.Equal(t, johnDoeUsername+" "+s.Config.DefaultTaskListTitle, lists.Lists[0].Title)
 	})
 }
 

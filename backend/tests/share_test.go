@@ -22,16 +22,16 @@ func (s *APITestSuite) TestShareList() {
 		require.NoError(t, err)
 
 		registerRequest = s.testData.registerModels.mikeMiles
-		_, err = s.registerUser(registerRequest)
+		mikeTokens, err := s.registerUser(registerRequest)
 		require.NoError(t, err)
 
-		lists, err := s.getLists(johnTokens.Access)
+		johnLists, err := s.getLists(johnTokens.Access)
 		require.NoError(t, err)
 
 		users, err := s.getAllUsers(johnTokens.Access)
 		require.NoError(t, err)
 
-		listId := lists[0].ID
+		listId := johnLists[0].ID
 
 		mikeUserId := ""
 		for _, user := range users {
@@ -50,5 +50,10 @@ func (s *APITestSuite) TestShareList() {
 		defer resp.Body.Close()
 
 		require.Equal(t, http.StatusOK, resp.StatusCode, "Expected status code 200")
+
+		mikeLists, err := s.getLists(mikeTokens.Access)
+		require.NoError(t, err)
+
+		require.Equal(t, 2, len(mikeLists), "Expected 2 lists")
 	})
 }
