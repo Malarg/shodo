@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"net/http"
 	"shodo/internal/domain/helpers"
 	"shodo/internal/repository"
 	"shodo/models"
@@ -48,34 +49,42 @@ func (this *TaskListService) GetTaskList(listId *string, userToken string) (mode
 	return this.TaskListRepository.GetTaskList(listId)
 }
 
-func (this *TaskListService) AddTaskToList(listId *string, task *models.Task, userToken string) (*string, error) {
+func (this *TaskListService) AddTaskToList(listId *string, task *models.Task, userToken string) (*string, *models.Error) {
 	isEditListAllowed, err := this.IsEditListAllowed(listId, userToken)
 
 	if err != nil {
-		return nil, err
+		return nil, &models.Error{Code: http.StatusInternalServerError, Message: err.Error()}
 	}
 
 	if !isEditListAllowed {
-		return nil, errors.New(kNotAllowed)
+		return nil, &models.Error{Code: http.StatusForbidden, Message: kNotAllowed}
 	}
 
-	return this.TaskListRepository.AddTaskToList(listId, task)
+	taskId, err := this.TaskListRepository.AddTaskToList(listId, task)
+	if err != nil {
+		return nil, &models.Error{Code: http.StatusInternalServerError, Message: err.Error()}
+	}
+
+	return taskId, nil
 }
 
-func (this *TaskListService) RemoveTaskFromList(listId *string, taskId *string, userToken string) error {
+func (this *TaskListService) RemoveTaskFromList(listId *string, taskId *string, userToken string) *models.Error {
 	isEditListAllowed, err := this.IsEditListAllowed(listId, userToken)
 
 	if err != nil {
-		return err
+		return &models.Error{Code: http.StatusInternalServerError, Message: err.Error()}
 	}
 
 	if !isEditListAllowed {
-		return errors.New(kNotAllowed)
+		return &models.Error{Code: http.StatusForbidden, Message: kNotAllowed}
 	}
 
 	err = this.TaskListRepository.RemoveTaskFromList(listId, taskId)
+	if err != nil {
+		return &models.Error{Code: http.StatusInternalServerError, Message: err.Error()}
+	}
 
-	return err
+	return nil
 }
 
 func (this *TaskListService) IsEditListAllowed(listId *string, userToken string) (bool, error) {
@@ -96,60 +105,68 @@ func (this *TaskListService) IsEditListAllowed(listId *string, userToken string)
 	return false, nil
 }
 
-func (this *TaskListService) StartShareWithUser(listId *string, email *string, userToken string) error {
+func (this *TaskListService) StartShareWithUser(listId *string, email *string, userToken string) *models.Error {
 	selfId, err := helpers.GetUserIdFromToken(userToken)
 	if err != nil {
-		return err
+		return &models.Error{Message: err.Error(), Code: http.StatusBadRequest}
 	}
 
 	user, err := this.UsersRepository.GetUserByEmail(*email)
 	if selfId == *&user.ID {
-		return errors.New("can't share with yourself")
+		return &models.Error{Message: "can't share with yourself", Code: http.StatusForbidden}
 	}
 
 	list, err := this.TaskListRepository.GetTaskList(listId)
 	if err != nil {
-		return err
+		return &models.Error{Message: err.Error(), Code: http.StatusBadRequest}
 	}
 
 	if list.Owner != selfId {
-		return errors.New("only list owner can share list")
+		return &models.Error{Message: "only list owner can share list", Code: http.StatusForbidden}
 	}
 
 	if helpers.Contains(list.SharedWith, *&user.ID) {
-		return errors.New("user already shared")
+		return &models.Error{Message: "user already shared", Code: http.StatusBadRequest}
 	}
 
 	err = this.TaskListRepository.AddUserToList(*listId, *email)
 
-	return err
+	if err != nil {
+		return &models.Error{Message: err.Error(), Code: http.StatusBadRequest}
+	}
+
+	return nil
 }
 
-func (this *TaskListService) StopShareWithUser(listId *string, email *string, userToken string) error {
+func (this *TaskListService) StopShareWithUser(listId *string, email *string, userToken string) *models.Error {
 	selfId, err := helpers.GetUserIdFromToken(userToken)
 	if err != nil {
-		return err
+		return &models.Error{Message: err.Error(), Code: http.StatusBadRequest}
 	}
 
 	user, err := this.UsersRepository.GetUserByEmail(*email)
 	if selfId == *&user.ID {
-		return errors.New("can't stop share with yourself")
+		return &models.Error{Message: "can't stop share with yourself", Code: http.StatusForbidden}
 	}
 
 	list, err := this.TaskListRepository.GetTaskList(listId)
 	if err != nil {
-		return err
+		return &models.Error{Message: err.Error(), Code: http.StatusBadRequest}
 	}
 
 	if list.Owner != selfId {
-		return errors.New("only list owner can stop share list")
+		return &models.Error{Message: "only list owner can stop share list", Code: http.StatusForbidden}
 	}
 
 	if !helpers.Contains(list.SharedWith, user.ID) {
-		return errors.New("user not shared")
+		return &models.Error{Message: "user not shared", Code: http.StatusBadRequest}
 	}
 
 	err = this.TaskListRepository.RemoveUserFromList(*listId, *email)
 
-	return err
+	if err != nil {
+		return &models.Error{Message: err.Error(), Code: http.StatusBadRequest}
+	}
+
+	return nil
 }

@@ -4,8 +4,6 @@ import (
 	"shodo/models"
 )
 
-//go:generate mockgen -source=services.go -destination=mocks/mock.go
-
 type Authentication interface {
 	LogIn(request models.LoginUserRequest) (*models.AuthTokens, error)
 	IsAuthorized(token string) (bool, error)
@@ -20,11 +18,11 @@ type TaskList interface {
 	GetTaskList(listId *string, userToken string) (models.TaskList, error)
 	GetTaskLists(userToken string) ([]models.TaskListShort, error)
 	CreateTaskList(list *models.TaskList)
-	AddTaskToList(listId *string, task *models.Task, userToken string) (*string, error)
-	RemoveTaskFromList(listId *string, taskId *string, userToken string) error
+	AddTaskToList(listId *string, task *models.Task, userToken string) (*string, *models.Error)
+	RemoveTaskFromList(listId *string, taskId *string, userToken string) *models.Error
 	IsEditListAllowed(listId *string, userToken string) (bool, error)
-	StartShareWithUser(listId *string, email *string, userToken string) error
-	StopShareWithUser(listId *string, email *string, userToken string) error
+	StartShareWithUser(listId *string, email *string, userToken string) *models.Error
+	StopShareWithUser(listId *string, email *string, userToken string) *models.Error
 }
 
 type Users interface {

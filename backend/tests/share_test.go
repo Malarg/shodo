@@ -10,8 +10,8 @@ import (
 
 // + 1. Share list with another user
 // + 2. Stop sharing list with user
-// 3. Try to add task to list which someone shared
-// 4. Try to add task to list which has not access
+// + 3. Try to add task to list which someone shared
+// + 4. Try to add task to list which has not access
 // 5. Try to remove task remove list which has not access
 // 6. Try to get all tasks from list which has not access
 
@@ -27,7 +27,7 @@ type shareTestRequestInput struct {
 	defautListId    string
 }
 
-func (s *APITestSuite) TestShareList2() {
+func (s *APITestSuite) TestShareList() {
 	tests := []struct {
 		name         string
 		users        []shareTestUserInput
@@ -78,6 +78,55 @@ func (s *APITestSuite) TestShareList2() {
 				)
 			},
 			responseCode: http.StatusOK,
+		},
+		{
+			name: "Try to add task to list which someone shared",
+			users: []shareTestUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					shareList:       []string{s.testData.registerModels.mikeMiles.Email},
+				},
+				{
+					registerRequest: s.testData.registerModels.mikeMiles,
+				},
+			},
+			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
+
+				return s.sendAddTaskRequest(
+					models.AddTaskRequest{
+						Task:   models.Task{Title: "Task 1"},
+						ListId: johnRi.defautListId,
+					},
+					mikeRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusOK,
+		},
+		{
+			name: "Try to add task to list which has not access",
+			users: []shareTestUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+				},
+				{
+					registerRequest: s.testData.registerModels.mikeMiles,
+				},
+			},
+			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
+
+				return s.sendAddTaskRequest(
+					models.AddTaskRequest{
+						Task:   models.Task{Title: "Task 1"},
+						ListId: johnRi.defautListId,
+					},
+					mikeRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusForbidden,
 		},
 	}
 

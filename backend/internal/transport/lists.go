@@ -71,10 +71,10 @@ func (this *TaskListHandler) AddTaskToList(c *gin.Context) {
 		return
 	}
 
-	res, err := this.TaskListService.AddTaskToList(&request.ListId, &request.Task, token)
-	if err != nil {
+	res, serviceError := this.TaskListService.AddTaskToList(&request.ListId, &request.Task, token)
+	if serviceError != nil {
 		this.Logger.Error("Error while adding task to list", zap.Error(err), zap.Any("request", request))
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
 		return
 	}
 
@@ -106,10 +106,10 @@ func (this *TaskListHandler) DeleteTaskFromList(c *gin.Context) {
 		return
 	}
 
-	err = this.TaskListService.RemoveTaskFromList(&request.ListId, &request.TaskId, token)
-	if err != nil {
+	serviceError := this.TaskListService.RemoveTaskFromList(&request.ListId, &request.TaskId, token)
+	if serviceError != nil {
 		this.Logger.Error("Error while removing task from list", zap.Error(err), zap.Any("request", request))
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
 		return
 	}
 
@@ -170,10 +170,10 @@ func (this *TaskListHandler) StartShareWithUser(c *gin.Context) {
 		return
 	}
 
-	err = this.TaskListService.StartShareWithUser(&request.ListId, &request.Email, token)
-	if err != nil {
+	serviceError := this.TaskListService.StartShareWithUser(&request.ListId, &request.Email, token)
+	if serviceError != nil {
 		this.Logger.Error("Error while sharing list with user", zap.Error(err), zap.Any("request", request))
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
 		return
 	}
 
@@ -205,10 +205,10 @@ func (this *TaskListHandler) StopShareWithUser(c *gin.Context) {
 		return
 	}
 
-	err = this.TaskListService.StopShareWithUser(&request.ListId, &request.Email, token)
-	if err != nil {
+	serviceError := this.TaskListService.StopShareWithUser(&request.ListId, &request.Email, token)
+	if serviceError != nil {
 		this.Logger.Error("Error while stop share list with user", zap.Error(err), zap.Any("request", request))
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
 		return
 	}
 
