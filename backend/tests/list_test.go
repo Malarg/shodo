@@ -9,6 +9,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Get all lists for a user
+// Get all lists for user with wrong token
+
+// Add task to a list
+// Add task to a list with wrong token
+// Add task to a list with wrong list id
+
+// Remove task from a list
+// Remove task from a list with wrong token
+// Remove task from a list with wrong list id
+// Remove task from a list with wrong task id
+
+// Get all tasks for a list
+// Get all tasks for a list with wrong token
+// Get all tasks for a list with wrong list id
+
 func (s *APITestSuite) TestGetLists() {
 	s.T().Run("Get all lists for a user", func(t *testing.T) {
 		registerRequest := s.testData.registerModels.johnDoe

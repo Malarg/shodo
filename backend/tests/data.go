@@ -18,6 +18,20 @@ const (
 	lukeSkywalkerPassword = "luke_skywalker_password123"
 )
 
+type shareTestUserInput struct {
+	registerRequest models.RegisterUserRequest
+	tasks           []models.Task
+	shareList       []string
+	// TODO: add response model and compare it
+}
+
+type shareTestRequestInput struct {
+	registerRequest models.RegisterUserRequest
+	tokens          models.AuthTokens
+	defautListId    string
+	tasks           []models.Task
+}
+
 type TestData struct {
 	registerModels RegisterModels
 	loginModels    LoginModels

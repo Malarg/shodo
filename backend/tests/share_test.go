@@ -8,20 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type shareTestUserInput struct {
-	registerRequest models.RegisterUserRequest
-	tasks           []models.Task
-	shareList       []string
-	// TODO: add response model and compare it
-}
-
-type shareTestRequestInput struct {
-	registerRequest models.RegisterUserRequest
-	tokens          models.AuthTokens
-	defautListId    string
-	tasks           []models.Task
-}
-
 func (s *APITestSuite) TestShareList() {
 	tests := []struct {
 		name         string
