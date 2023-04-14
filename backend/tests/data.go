@@ -12,6 +12,10 @@ const (
 	mikeMilesUsername = "Mike Miles"
 	mikeMilesEmail    = "mike.miles@gmail.com"
 	mikeMilesPassword = "mike_miles_password123"
+
+	lukeSkywalkerUsername = "Luke Skywalker"
+	lukeSkywalkerEmail    = "luke.skywalker@gmail.com"
+	lukeSkywalkerPassword = "luke_skywalker_password123"
 )
 
 type TestData struct {
@@ -25,8 +29,9 @@ func (t *TestData) Init() {
 }
 
 type RegisterModels struct {
-	johnDoe   models.RegisterUserRequest
-	mikeMiles models.RegisterUserRequest
+	johnDoe       models.RegisterUserRequest
+	mikeMiles     models.RegisterUserRequest
+	lukeSkywalker models.RegisterUserRequest
 }
 
 func (m *RegisterModels) InitRegisterModels() {
@@ -41,11 +46,18 @@ func (m *RegisterModels) InitRegisterModels() {
 		Password: mikeMilesPassword,
 		Username: mikeMilesUsername,
 	}
+
+	m.lukeSkywalker = models.RegisterUserRequest{
+		Email:    lukeSkywalkerEmail,
+		Password: lukeSkywalkerPassword,
+		Username: lukeSkywalkerUsername,
+	}
 }
 
 type LoginModels struct {
-	johnDoe   models.LoginUserRequest
-	mikeMiles models.LoginUserRequest
+	johnDoe       models.LoginUserRequest
+	mikeMiles     models.LoginUserRequest
+	lukeSkywalker models.LoginUserRequest
 }
 
 func (m *LoginModels) InitLoginModels() {
@@ -57,5 +69,10 @@ func (m *LoginModels) InitLoginModels() {
 	m.mikeMiles = models.LoginUserRequest{
 		Email:    mikeMilesEmail,
 		Password: mikeMilesPassword,
+	}
+
+	m.lukeSkywalker = models.LoginUserRequest{
+		Email:    lukeSkywalkerEmail,
+		Password: lukeSkywalkerPassword,
 	}
 }

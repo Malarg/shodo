@@ -117,7 +117,7 @@ func (this *TaskListService) StartShareWithUser(listId *string, email *string, u
 
 	user, err := this.UsersRepository.GetUserByEmail(*email)
 	if selfId == *&user.ID {
-		return &models.Error{Message: "can't share with yourself", Code: http.StatusForbidden}
+		return &models.Error{Message: "can't share with yourself", Code: http.StatusBadRequest}
 	}
 
 	list, err := this.TaskListRepository.GetTaskList(listId)
@@ -150,7 +150,7 @@ func (this *TaskListService) StopShareWithUser(listId *string, email *string, us
 
 	user, err := this.UsersRepository.GetUserByEmail(*email)
 	if selfId == *&user.ID {
-		return &models.Error{Message: "can't stop share with yourself", Code: http.StatusForbidden}
+		return &models.Error{Message: "can't stop share with yourself", Code: http.StatusBadRequest}
 	}
 
 	list, err := this.TaskListRepository.GetTaskList(listId)

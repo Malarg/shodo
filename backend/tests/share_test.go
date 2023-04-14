@@ -8,12 +8,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// + 1. Share list with another user
-// + 2. Stop sharing list with user
-// + 3. Try to add task to list which someone shared
-// + 4. Try to add task to list which has not access
-// + 5. Try to remove task remove list which has not access
-// + 6. Try to get all tasks from list which has not access
+// + Share list with another user
+// + Share not accessible list
+// + Share list with yourself
+// + Share list with user which already shared
+
+// + Stop sharing list with user
+// + Try to add task to list which someone shared
+// + Try to add task to list which has not access
+// + Try to remove task remove list which has not access
+// + Try to get all tasks from list which has not access
 
 type shareTestUserInput struct {
 	registerRequest models.RegisterUserRequest
@@ -54,6 +58,74 @@ func (s *APITestSuite) TestShareList() {
 				)
 			},
 			responseCode: http.StatusOK,
+		},
+		{
+			name: "Share not accessible list",
+			users: []shareTestUserInput{
+				{registerRequest: s.testData.registerModels.johnDoe},
+				{
+					registerRequest: s.testData.registerModels.mikeMiles,
+					tasks:           []models.Task{{Title: "Task 1"}},
+				},
+				{registerRequest: s.testData.registerModels.lukeSkywalker},
+			},
+			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
+				lukeRi := getRequestInputByEmail(s.testData.registerModels.lukeSkywalker.Email, requestInputs)
+
+				return s.sendStartShareListRequest(
+					models.ShareListRequest{
+						ListId: mikeRi.defautListId,
+						Email:  lukeRi.registerRequest.Email,
+					},
+					johnRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusForbidden,
+		},
+		{
+			name: "Share list with yourself",
+			users: []shareTestUserInput{
+				{registerRequest: s.testData.registerModels.johnDoe},
+			},
+			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+
+				return s.sendStartShareListRequest(
+					models.ShareListRequest{
+						ListId: johnRi.defautListId,
+						Email:  johnRi.registerRequest.Email,
+					},
+					johnRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusBadRequest,
+		},
+		{
+			name: "Share list with user which already shared",
+			users: []shareTestUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					shareList:       []string{s.testData.registerModels.mikeMiles.Email},
+				},
+				{
+					registerRequest: s.testData.registerModels.mikeMiles,
+				},
+			},
+			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
+
+				return s.sendStartShareListRequest(
+					models.ShareListRequest{
+						ListId: johnRi.defautListId,
+						Email:  mikeRi.registerRequest.Email,
+					},
+					johnRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusBadRequest,
 		},
 		{
 			name: "Stop share list with another user",
