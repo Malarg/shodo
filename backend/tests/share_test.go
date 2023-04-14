@@ -8,28 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// + Share list with another user
-// + Share not accessible list
-// + Share list with yourself
-// + Share list with user which already shared
-
-// + Stop sharing list with user
-// + Stop sharing list with user which is not shared
-// + Stop sharing list with yourself
-
-// + Try to add task to list which someone shared
-// + Try to add task to list which has not access
-
-// Try to remove task from list which someone shared
-// + Try to remove task remove list which has not access
-
-// Try to get all tasks from list which someone shared
-// + Try to get all tasks from list which has not access
-
 type shareTestUserInput struct {
 	registerRequest models.RegisterUserRequest
 	tasks           []models.Task
 	shareList       []string
+	// TODO: add response model and compare it
 }
 
 type shareTestRequestInput struct {
@@ -253,6 +236,34 @@ func (s *APITestSuite) TestShareList() {
 			responseCode: http.StatusForbidden,
 		},
 		{
+			name: "Try to remove task from list which someone shared",
+			users: []shareTestUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					tasks: []models.Task{
+						{Title: "Task 1"},
+					},
+					shareList: []string{s.testData.registerModels.mikeMiles.Email},
+				},
+				{
+					registerRequest: s.testData.registerModels.mikeMiles,
+				},
+			},
+			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
+
+				return s.sendRemoveTaskRequest(
+					models.RemoveTaskRequest{
+						TaskId: johnRi.tasks[0].ID,
+						ListId: johnRi.defautListId,
+					},
+					mikeRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusOK,
+		},
+		{
 			name: "Try to remove task from list which has not access",
 			users: []shareTestUserInput{
 				{
@@ -278,6 +289,31 @@ func (s *APITestSuite) TestShareList() {
 				)
 			},
 			responseCode: http.StatusForbidden,
+		},
+		{
+			name: "Try to get all tasks from list which someone shared",
+			users: []shareTestUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					tasks: []models.Task{
+						{Title: "Task 1"},
+					},
+					shareList: []string{s.testData.registerModels.mikeMiles.Email},
+				},
+				{
+					registerRequest: s.testData.registerModels.mikeMiles,
+				},
+			},
+			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
+
+				return s.sendGetTasksRequest(
+					johnRi.defautListId,
+					mikeRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusOK,
 		},
 		{
 			name: "Try to get all tasks from list which has not access",
