@@ -1,6 +1,6 @@
 package models
 
 type ShareListRequest struct {
-	UserId string `json:"user_id" binding:"required"`
+	Email  string `json:"email" binding:"required"`
 	ListId string `json:"list_id" binding:"required"`
 }

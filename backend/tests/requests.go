@@ -121,3 +121,33 @@ func (s *APITestSuite) getAllUsers(token string) ([]models.UserShort, error) {
 func (s *APITestSuite) sendStartShareListRequest(request models.ShareListRequest, token string) (*http.Response, error) {
 	return s.sendJSONRequest("POST", "/api/v1/share/start", request, &token)
 }
+
+func (s *APITestSuite) shareList(request models.ShareListRequest, token string) (*models.EmptyResponse, error) {
+	resp, err := s.sendStartShareListRequest(request, token)
+	defer resp.Body.Close()
+
+	var response models.EmptyResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+func (s *APITestSuite) sendStopShareListRequest(request models.ShareListRequest, token string) (*http.Response, error) {
+	return s.sendJSONRequest("POST", "/api/v1/share/stop", request, &token)
+}
+
+func (s *APITestSuite) stopShareList(request models.ShareListRequest, token string) (*models.EmptyResponse, error) {
+	resp, err := s.sendStopShareListRequest(request, token)
+	defer resp.Body.Close()
+
+	var response models.EmptyResponse
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}

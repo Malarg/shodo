@@ -55,7 +55,7 @@ func Run(r *gin.Engine) {
 	usersRepository := repository.UsersRepository{Client: client, Config: config}
 	taskListRepository := repository.TaskListRepository{Mongo: client, Config: config}
 
-	tasksService := services.TaskListService{TaskListRepository: &taskListRepository}
+	tasksService := services.TaskListService{TaskListRepository: &taskListRepository, UsersRepository: &usersRepository}
 	tokensService := services.TokensService{TokensRepository: &tokensRepository}
 	usersService := services.UsersService{UsersRepository: &usersRepository}
 	registrationService := services.RegistrationService{Repository: &usersRepository, TaskListService: &tasksService, TokensService: &tokensService}

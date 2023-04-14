@@ -70,6 +70,17 @@ func (this *UsersRepository) GetAllUsers(id string) ([]models.UserShort, error) 
 	return users, nil
 }
 
+func (this *UsersRepository) GetUserById(id string) (models.User, error) {
+	mongoId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	var user mongodto.User
+	err = this.getUsersCollection().FindOne(context.TODO(), mongodto.User{ID: mongoId}).Decode(&user)
+	return user.ToModel(), err
+}
+
 func (this *UsersRepository) getUsersCollection() *mongo.Collection {
 	return this.Client.Database(this.Config.DbName).Collection("users")
 }

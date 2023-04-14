@@ -23,8 +23,8 @@ type TaskList interface {
 	AddTaskToList(listId *string, task *models.Task, userToken string) (*string, error)
 	RemoveTaskFromList(listId *string, taskId *string, userToken string) error
 	IsEditListAllowed(listId *string, userToken string) (bool, error)
-	StartShareWithUser(listId *string, teammateId *string, userToken string) error
-	StopShareWithUser(listId *string, teammateId *string, userToken string) error
+	StartShareWithUser(listId *string, email *string, userToken string) error
+	StopShareWithUser(listId *string, email *string, userToken string) error
 }
 
 type Users interface {

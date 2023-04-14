@@ -14,6 +14,7 @@ const (
 
 type TaskListService struct {
 	TaskListRepository    repository.TaskList
+	UsersRepository       repository.Users
 	AuthenticationService *AuthenticationService
 }
 
@@ -95,13 +96,14 @@ func (this *TaskListService) IsEditListAllowed(listId *string, userToken string)
 	return false, nil
 }
 
-func (this *TaskListService) StartShareWithUser(listId *string, teammateId *string, userToken string) error {
-	userId, err := helpers.GetUserIdFromToken(userToken)
+func (this *TaskListService) StartShareWithUser(listId *string, email *string, userToken string) error {
+	selfId, err := helpers.GetUserIdFromToken(userToken)
 	if err != nil {
 		return err
 	}
 
-	if userId == *teammateId {
+	user, err := this.UsersRepository.GetUserByEmail(*email)
+	if selfId == *&user.ID {
 		return errors.New("can't share with yourself")
 	}
 
@@ -110,26 +112,27 @@ func (this *TaskListService) StartShareWithUser(listId *string, teammateId *stri
 		return err
 	}
 
-	if list.Owner != userId {
+	if list.Owner != selfId {
 		return errors.New("only list owner can share list")
 	}
 
-	if helpers.Contains(list.SharedWith, *teammateId) {
+	if helpers.Contains(list.SharedWith, *&user.ID) {
 		return errors.New("user already shared")
 	}
 
-	err = this.TaskListRepository.AddUserToList(*listId, *teammateId)
+	err = this.TaskListRepository.AddUserToList(*listId, *email)
 
 	return err
 }
 
-func (this *TaskListService) StopShareWithUser(listId *string, teammateId *string, userToken string) error {
-	userId, err := helpers.GetUserIdFromToken(userToken)
+func (this *TaskListService) StopShareWithUser(listId *string, email *string, userToken string) error {
+	selfId, err := helpers.GetUserIdFromToken(userToken)
 	if err != nil {
 		return err
 	}
 
-	if userId == *teammateId {
+	user, err := this.UsersRepository.GetUserByEmail(*email)
+	if selfId == *&user.ID {
 		return errors.New("can't stop share with yourself")
 	}
 
@@ -138,15 +141,15 @@ func (this *TaskListService) StopShareWithUser(listId *string, teammateId *strin
 		return err
 	}
 
-	if list.Owner != userId {
+	if list.Owner != selfId {
 		return errors.New("only list owner can stop share list")
 	}
 
-	if !helpers.Contains(list.SharedWith, *teammateId) {
+	if !helpers.Contains(list.SharedWith, user.ID) {
 		return errors.New("user not shared")
 	}
 
-	err = this.TaskListRepository.RemoveUserFromList(*listId, *teammateId)
+	err = this.TaskListRepository.RemoveUserFromList(*listId, *email)
 
 	return err
 }

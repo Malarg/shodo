@@ -5,8 +5,8 @@ import "shodo/models"
 type TaskList interface {
 	CreateTaskList(taskList *models.TaskList) error
 	DeleteTaskList(id string) error
-	AddUserToList(listId string, userId string) error
-	RemoveUserFromList(listId string, userId string) error
+	AddUserToList(listId string, email string) error
+	RemoveUserFromList(listId string, email string) error
 	AddTaskToList(listId *string, task *models.Task) (*string, error)
 	RemoveTaskFromList(listId *string, taskId *string) error
 	GetTaskList(id *string) (models.TaskList, error)
@@ -19,4 +19,5 @@ type Users interface {
 	DeleteUser(id string) error
 	GetAllUsers(id string) ([]models.UserShort, error)
 	GetUserByEmail(email string) (models.User, error)
+	GetUserById(id string) (models.User, error)
 }

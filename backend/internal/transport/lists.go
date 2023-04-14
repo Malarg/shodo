@@ -170,7 +170,7 @@ func (this *TaskListHandler) StartShareWithUser(c *gin.Context) {
 		return
 	}
 
-	err = this.TaskListService.StartShareWithUser(&request.ListId, &request.UserId, token)
+	err = this.TaskListService.StartShareWithUser(&request.ListId, &request.Email, token)
 	if err != nil {
 		this.Logger.Error("Error while sharing list with user", zap.Error(err), zap.Any("request", request))
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -205,7 +205,7 @@ func (this *TaskListHandler) StopShareWithUser(c *gin.Context) {
 		return
 	}
 
-	err = this.TaskListService.StopShareWithUser(&request.ListId, &request.UserId, token)
+	err = this.TaskListService.StopShareWithUser(&request.ListId, &request.Email, token)
 	if err != nil {
 		this.Logger.Error("Error while stop share list with user", zap.Error(err), zap.Any("request", request))
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
