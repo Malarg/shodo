@@ -14,9 +14,16 @@ import (
 // + Share list with user which already shared
 
 // + Stop sharing list with user
+// + Stop sharing list with user which is not shared
+// + Stop sharing list with yourself
+
 // + Try to add task to list which someone shared
 // + Try to add task to list which has not access
+
+// Try to remove task from list which someone shared
 // + Try to remove task remove list which has not access
+
+// Try to get all tasks from list which someone shared
 // + Try to get all tasks from list which has not access
 
 type shareTestUserInput struct {
@@ -151,6 +158,50 @@ func (s *APITestSuite) TestShareList() {
 				)
 			},
 			responseCode: http.StatusOK,
+		},
+		{
+			name: "Stop sharing list with user which is not shared",
+			users: []shareTestUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+				},
+				{
+					registerRequest: s.testData.registerModels.mikeMiles,
+				},
+			},
+			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
+
+				return s.sendStopShareListRequest(
+					models.ShareListRequest{
+						ListId: johnRi.defautListId,
+						Email:  mikeRi.registerRequest.Email,
+					},
+					johnRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusBadRequest,
+		},
+		{
+			name: "Stop share list with yourself",
+			users: []shareTestUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+				},
+			},
+			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+
+				return s.sendStopShareListRequest(
+					models.ShareListRequest{
+						ListId: johnRi.defautListId,
+						Email:  johnRi.registerRequest.Email,
+					},
+					johnRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusBadRequest,
 		},
 		{
 			name: "Try to add task to list which someone shared",
