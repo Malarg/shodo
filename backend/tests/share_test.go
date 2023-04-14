@@ -12,8 +12,8 @@ import (
 // + 2. Stop sharing list with user
 // + 3. Try to add task to list which someone shared
 // + 4. Try to add task to list which has not access
-// 5. Try to remove task remove list which has not access
-// 6. Try to get all tasks from list which has not access
+// + 5. Try to remove task remove list which has not access
+// + 6. Try to get all tasks from list which has not access
 
 type shareTestUserInput struct {
 	registerRequest models.RegisterUserRequest
@@ -25,6 +25,7 @@ type shareTestRequestInput struct {
 	registerRequest models.RegisterUserRequest
 	tokens          models.AuthTokens
 	defautListId    string
+	tasks           []models.Task
 }
 
 func (s *APITestSuite) TestShareList() {
@@ -32,7 +33,7 @@ func (s *APITestSuite) TestShareList() {
 		name         string
 		users        []shareTestUserInput
 		request      func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error)
-		responseCode int //generic response type?
+		responseCode int
 	}{
 		{
 			name: "Share list with another user",
@@ -128,6 +129,57 @@ func (s *APITestSuite) TestShareList() {
 			},
 			responseCode: http.StatusForbidden,
 		},
+		{
+			name: "Try to remove task from list which has not access",
+			users: []shareTestUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					tasks: []models.Task{
+						{Title: "Task 1"},
+					},
+				},
+				{
+					registerRequest: s.testData.registerModels.mikeMiles,
+				},
+			},
+			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
+
+				return s.sendRemoveTaskRequest(
+					models.RemoveTaskRequest{
+						TaskId: johnRi.tasks[0].ID,
+						ListId: johnRi.defautListId,
+					},
+					mikeRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusForbidden,
+		},
+		{
+			name: "Try to get all tasks from list which has not access",
+			users: []shareTestUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					tasks: []models.Task{
+						{Title: "Task 1"},
+					},
+				},
+				{
+					registerRequest: s.testData.registerModels.mikeMiles,
+				},
+			},
+			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
+
+				return s.sendGetTasksRequest(
+					johnRi.defautListId,
+					mikeRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusForbidden,
+		},
 	}
 
 	for _, test := range tests {
@@ -144,24 +196,25 @@ func (s *APITestSuite) TestShareList() {
 
 				require.Equal(t, 1, len(lists), "Expected 1 list")
 
+				addedTasks := []models.Task{}
 				for _, task := range user.tasks {
-					resp, err := s.sendAddTaskRequest(
+					idResp, err := s.addTask(
 						models.AddTaskRequest{
 							Task:   task,
 							ListId: lists[0].ID,
 						},
 						tokens.Access,
 					)
-
 					require.NoError(t, err)
 
-					require.Equal(t, http.StatusOK, resp.StatusCode, "Expected status code 200")
+					addedTasks = append(addedTasks, models.Task{ID: idResp.Id, Title: task.Title})
 				}
 
 				requestInputs = append(requestInputs, shareTestRequestInput{
 					registerRequest: user.registerRequest,
 					tokens:          *tokens,
 					defautListId:    lists[0].ID,
+					tasks:           addedTasks,
 				})
 			}
 

@@ -135,10 +135,10 @@ func (this *TaskListHandler) GetTaskList(c *gin.Context) {
 
 	listId := c.Param("id")
 
-	list, err := this.TaskListService.GetTaskList(&listId, token)
-	if err != nil {
+	list, serviceError := this.TaskListService.GetTaskList(&listId, token)
+	if serviceError != nil {
 		this.Logger.Error("Error while getting list", zap.Error(err), zap.Any("listId", listId))
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
 		return
 	}
 

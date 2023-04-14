@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"net/http"
 	"shodo/internal/domain/helpers"
 	"shodo/internal/repository"
@@ -36,17 +35,22 @@ func (this *TaskListService) GetTaskLists(userToken string) ([]models.TaskListSh
 	return this.TaskListRepository.GetTaskLists(userId)
 }
 
-func (this *TaskListService) GetTaskList(listId *string, userToken string) (models.TaskList, error) {
+func (this *TaskListService) GetTaskList(listId *string, userToken string) (models.TaskList, *models.Error) {
 	isEditListAllowed, err := this.IsEditListAllowed(listId, userToken)
 	if err != nil {
-		return models.TaskList{}, err
+		return models.TaskList{}, &models.Error{Code: http.StatusInternalServerError, Message: err.Error()}
 	}
 
 	if !isEditListAllowed {
-		return models.TaskList{}, errors.New(kNotAllowed)
+		return models.TaskList{}, &models.Error{Code: http.StatusForbidden, Message: kNotAllowed}
 	}
 
-	return this.TaskListRepository.GetTaskList(listId)
+	resp, err := this.TaskListRepository.GetTaskList(listId)
+	if err != nil {
+		return models.TaskList{}, &models.Error{Code: http.StatusInternalServerError, Message: err.Error()}
+	}
+
+	return resp, nil
 }
 
 func (this *TaskListService) AddTaskToList(listId *string, task *models.Task, userToken string) (*string, *models.Error) {
