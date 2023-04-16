@@ -36,6 +36,11 @@ func (this *TaskListService) GetTaskLists(userToken string) ([]models.TaskListSh
 }
 
 func (this *TaskListService) GetTaskList(listId *string, userToken string) (models.TaskList, *models.Error) {
+	isListExists, err := this.TaskListRepository.CheckTaskListExists(*listId)
+	if !isListExists {
+		return models.TaskList{}, &models.Error{Code: http.StatusNotFound, Message: "list not found"}
+	}
+
 	isEditListAllowed, err := this.IsEditListAllowed(listId, userToken)
 	if err != nil {
 		return models.TaskList{}, &models.Error{Code: http.StatusInternalServerError, Message: err.Error()}
@@ -54,8 +59,12 @@ func (this *TaskListService) GetTaskList(listId *string, userToken string) (mode
 }
 
 func (this *TaskListService) AddTaskToList(listId *string, task *models.Task, userToken string) (*string, *models.Error) {
-	isEditListAllowed, err := this.IsEditListAllowed(listId, userToken)
+	isListExists, err := this.TaskListRepository.CheckTaskListExists(*listId)
+	if !isListExists {
+		return nil, &models.Error{Code: http.StatusNotFound, Message: "list not found"}
+	}
 
+	isEditListAllowed, err := this.IsEditListAllowed(listId, userToken)
 	if err != nil {
 		return nil, &models.Error{Code: http.StatusInternalServerError, Message: err.Error()}
 	}
@@ -73,8 +82,17 @@ func (this *TaskListService) AddTaskToList(listId *string, task *models.Task, us
 }
 
 func (this *TaskListService) RemoveTaskFromList(listId *string, taskId *string, userToken string) *models.Error {
-	isEditListAllowed, err := this.IsEditListAllowed(listId, userToken)
+	isListExists, err := this.TaskListRepository.CheckTaskListExists(*listId)
+	if !isListExists {
+		return &models.Error{Code: http.StatusNotFound, Message: "list not found"}
+	}
 
+	isTaskExists, err := this.TaskListRepository.CheckTaskExists(*listId, *taskId)
+	if !isTaskExists {
+		return &models.Error{Code: http.StatusNotFound, Message: "task not found"}
+	}
+
+	isEditListAllowed, err := this.IsEditListAllowed(listId, userToken)
 	if err != nil {
 		return &models.Error{Code: http.StatusInternalServerError, Message: err.Error()}
 	}

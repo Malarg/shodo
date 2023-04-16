@@ -18,14 +18,14 @@ const (
 	lukeSkywalkerPassword = "luke_skywalker_password123"
 )
 
-type shareTestUserInput struct {
+type testUserInput struct {
 	registerRequest models.RegisterUserRequest
 	tasks           []models.Task
 	shareList       []string
 	// TODO: add response model and compare it
 }
 
-type shareTestRequestInput struct {
+type testRequestInput struct {
 	registerRequest models.RegisterUserRequest
 	tokens          models.AuthTokens
 	defautListId    string
@@ -35,11 +35,13 @@ type shareTestRequestInput struct {
 type TestData struct {
 	registerModels RegisterModels
 	loginModels    LoginModels
+	taskModels     TaskModels
 }
 
 func (t *TestData) Init() {
 	t.registerModels.InitRegisterModels()
 	t.loginModels.InitLoginModels()
+	t.taskModels.InitTaskModels()
 }
 
 type RegisterModels struct {
@@ -89,4 +91,14 @@ func (m *LoginModels) InitLoginModels() {
 		Email:    lukeSkywalkerEmail,
 		Password: lukeSkywalkerPassword,
 	}
+}
+
+type TaskModels struct {
+	task1 models.Task
+	task2 models.Task
+}
+
+func (m *TaskModels) InitTaskModels() {
+	m.task1 = models.Task{Title: "Task 1"}
+	m.task2 = models.Task{Title: "Task 2"}
 }

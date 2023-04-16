@@ -11,17 +11,17 @@ import (
 func (s *APITestSuite) TestShareList() {
 	tests := []struct {
 		name         string
-		users        []shareTestUserInput
-		request      func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error)
+		users        []testUserInput
+		request      func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error)
 		responseCode int
 	}{
 		{
 			name: "Share list with another user",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{registerRequest: s.testData.registerModels.johnDoe},
 				{registerRequest: s.testData.registerModels.mikeMiles},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
 
@@ -37,7 +37,7 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Share not accessible list",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{registerRequest: s.testData.registerModels.johnDoe},
 				{
 					registerRequest: s.testData.registerModels.mikeMiles,
@@ -45,7 +45,7 @@ func (s *APITestSuite) TestShareList() {
 				},
 				{registerRequest: s.testData.registerModels.lukeSkywalker},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
 				lukeRi := getRequestInputByEmail(s.testData.registerModels.lukeSkywalker.Email, requestInputs)
@@ -62,10 +62,10 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Share list with yourself",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{registerRequest: s.testData.registerModels.johnDoe},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 
 				return s.sendStartShareListRequest(
@@ -80,7 +80,7 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Share list with user which already shared",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{
 					registerRequest: s.testData.registerModels.johnDoe,
 					shareList:       []string{s.testData.registerModels.mikeMiles.Email},
@@ -89,7 +89,7 @@ func (s *APITestSuite) TestShareList() {
 					registerRequest: s.testData.registerModels.mikeMiles,
 				},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
 
@@ -105,7 +105,7 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Stop share list with another user",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{
 					registerRequest: s.testData.registerModels.johnDoe,
 					shareList:       []string{s.testData.registerModels.mikeMiles.Email},
@@ -114,7 +114,7 @@ func (s *APITestSuite) TestShareList() {
 					registerRequest: s.testData.registerModels.mikeMiles,
 				},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
 
@@ -130,7 +130,7 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Stop sharing list with user which is not shared",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{
 					registerRequest: s.testData.registerModels.johnDoe,
 				},
@@ -138,7 +138,7 @@ func (s *APITestSuite) TestShareList() {
 					registerRequest: s.testData.registerModels.mikeMiles,
 				},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
 
@@ -154,12 +154,12 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Stop share list with yourself",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{
 					registerRequest: s.testData.registerModels.johnDoe,
 				},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 
 				return s.sendStopShareListRequest(
@@ -174,7 +174,7 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Try to add task to list which someone shared",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{
 					registerRequest: s.testData.registerModels.johnDoe,
 					shareList:       []string{s.testData.registerModels.mikeMiles.Email},
@@ -183,7 +183,7 @@ func (s *APITestSuite) TestShareList() {
 					registerRequest: s.testData.registerModels.mikeMiles,
 				},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
 
@@ -199,7 +199,7 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Try to add task to list which has not access",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{
 					registerRequest: s.testData.registerModels.johnDoe,
 				},
@@ -207,7 +207,7 @@ func (s *APITestSuite) TestShareList() {
 					registerRequest: s.testData.registerModels.mikeMiles,
 				},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
 
@@ -223,7 +223,7 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Try to remove task from list which someone shared",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{
 					registerRequest: s.testData.registerModels.johnDoe,
 					tasks: []models.Task{
@@ -235,7 +235,7 @@ func (s *APITestSuite) TestShareList() {
 					registerRequest: s.testData.registerModels.mikeMiles,
 				},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
 
@@ -251,7 +251,7 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Try to remove task from list which has not access",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{
 					registerRequest: s.testData.registerModels.johnDoe,
 					tasks: []models.Task{
@@ -262,7 +262,7 @@ func (s *APITestSuite) TestShareList() {
 					registerRequest: s.testData.registerModels.mikeMiles,
 				},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
 
@@ -278,7 +278,7 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Try to get all tasks from list which someone shared",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{
 					registerRequest: s.testData.registerModels.johnDoe,
 					tasks: []models.Task{
@@ -290,7 +290,7 @@ func (s *APITestSuite) TestShareList() {
 					registerRequest: s.testData.registerModels.mikeMiles,
 				},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
 
@@ -303,7 +303,7 @@ func (s *APITestSuite) TestShareList() {
 		},
 		{
 			name: "Try to get all tasks from list which has not access",
-			users: []shareTestUserInput{
+			users: []testUserInput{
 				{
 					registerRequest: s.testData.registerModels.johnDoe,
 					tasks: []models.Task{
@@ -314,7 +314,7 @@ func (s *APITestSuite) TestShareList() {
 					registerRequest: s.testData.registerModels.mikeMiles,
 				},
 			},
-			request: func(t *testing.T, requestInputs []shareTestRequestInput) (resp *http.Response, err error) {
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
 				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
 				mikeRi := getRequestInputByEmail(s.testData.registerModels.mikeMiles.Email, requestInputs)
 
@@ -330,7 +330,7 @@ func (s *APITestSuite) TestShareList() {
 	for _, test := range tests {
 		s.T().Run(test.name, func(t *testing.T) {
 			s.SetupTest()
-			requestInputs := []shareTestRequestInput{}
+			requestInputs := []testRequestInput{}
 
 			for _, user := range test.users {
 				tokens, err := s.registerUser(user.registerRequest)
@@ -355,7 +355,7 @@ func (s *APITestSuite) TestShareList() {
 					addedTasks = append(addedTasks, models.Task{ID: idResp.Id, Title: task.Title})
 				}
 
-				requestInputs = append(requestInputs, shareTestRequestInput{
+				requestInputs = append(requestInputs, testRequestInput{
 					registerRequest: user.registerRequest,
 					tokens:          *tokens,
 					defautListId:    lists[0].ID,
@@ -389,7 +389,7 @@ func (s *APITestSuite) TestShareList() {
 	}
 }
 
-func getToken(registerRequest models.RegisterUserRequest, requestInputs []shareTestRequestInput) models.AuthTokens {
+func getToken(registerRequest models.RegisterUserRequest, requestInputs []testRequestInput) models.AuthTokens {
 	for _, requestInput := range requestInputs {
 		if requestInput.registerRequest.Email == registerRequest.Email {
 			return requestInput.tokens
@@ -399,7 +399,7 @@ func getToken(registerRequest models.RegisterUserRequest, requestInputs []shareT
 	panic("User not found")
 }
 
-func getRequestInputByEmail(email string, requestInputs []shareTestRequestInput) shareTestRequestInput {
+func getRequestInputByEmail(email string, requestInputs []testRequestInput) testRequestInput {
 	for _, requestInput := range requestInputs {
 		if requestInput.registerRequest.Email == email {
 			return requestInput

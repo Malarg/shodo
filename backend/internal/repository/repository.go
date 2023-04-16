@@ -11,6 +11,8 @@ type TaskList interface {
 	RemoveTaskFromList(listId *string, taskId *string) error
 	GetTaskList(id *string) (models.TaskList, error)
 	GetTaskLists(userId string) ([]models.TaskListShort, error)
+	CheckTaskListExists(id string) (bool, error)
+	CheckTaskExists(listId string, taskId string) (bool, error)
 }
 
 type Users interface {

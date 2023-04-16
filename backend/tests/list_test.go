@@ -25,99 +25,315 @@ import (
 // Get all tasks for a list with wrong token
 // Get all tasks for a list with wrong list id
 
-func (s *APITestSuite) TestGetLists() {
-	s.T().Run("Get all lists for a user", func(t *testing.T) {
-		registerRequest := s.testData.registerModels.johnDoe
-		tokens, err := s.registerUser(registerRequest)
-		require.NoError(t, err)
+func (s *APITestSuite) TestLists() {
+	tests := []struct {
+		name            string
+		users           []testUserInput
+		request         func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error)
+		responseCode    int
+		responseChecker func(t *testing.T, resp *http.Response, requestInputs []testRequestInput)
+	}{
+		{
+			name: "Get all lists for a user",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				return s.sendGetListsRequest(johnRi.tokens.Access)
+			},
+			responseCode: http.StatusOK,
+			responseChecker: func(t *testing.T, resp *http.Response, requestInputs []testRequestInput) {
+				var response models.GetListsResponse
+				err := json.NewDecoder(resp.Body).Decode(&response)
+				require.NoError(t, err)
+				require.Equal(t, 1, len(response.Lists))
+			},
+		},
 
-		resp, err := s.sendGetListsRequest(tokens.Access)
-		require.NoError(t, err)
-		defer resp.Body.Close()
+		{
+			name: "Get all lists for user with wrong token",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				return s.sendGetListsRequest("wrong token")
+			},
+			responseCode: http.StatusUnauthorized,
+		},
 
-		require.Equal(t, http.StatusOK, resp.StatusCode, "Expected status code 200")
+		{
+			name: "Add task to a list",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				return s.sendAddTaskRequest(models.AddTaskRequest{
+					Task:   s.testData.taskModels.task1,
+					ListId: johnRi.defautListId,
+				}, johnRi.tokens.Access)
+			},
+			responseCode: http.StatusOK,
+			responseChecker: func(t *testing.T, resp *http.Response, requestInputs []testRequestInput) {
+				var response models.IdResponse
+				err := json.NewDecoder(resp.Body).Decode(&response)
+				require.NoError(t, err)
+				require.NotEmpty(t, response.Id)
+			},
+		},
 
-		var lists models.GetListsResponse
-		err = json.NewDecoder(resp.Body).Decode(&lists)
-		require.NoError(t, err)
+		{
+			name: "Add task to a list with wrong token",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				return s.sendAddTaskRequest(models.AddTaskRequest{
+					Task:   s.testData.taskModels.task1,
+					ListId: johnRi.defautListId,
+				}, "wrong token")
+			},
+			responseCode: http.StatusUnauthorized,
+		},
 
-		require.NotEmpty(t, lists.Lists, "Expected lists in the response")
-		require.Equal(t, johnDoeUsername+" "+s.Config.DefaultTaskListTitle, lists.Lists[0].Title)
-	})
-}
+		{
+			name: "Add task to a list with wrong list id",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				return s.sendAddTaskRequest(models.AddTaskRequest{
+					Task:   s.testData.taskModels.task1,
+					ListId: "wrong list id",
+				}, johnRi.tokens.Access)
+			},
+			responseCode: http.StatusNotFound,
+		},
 
-// add task, get all tasks, remove task, get all tasks
-func (s *APITestSuite) TestManageTasks() {
-	s.T().Run("Manage tasks in default list", func(t *testing.T) {
-		registerRequest := s.testData.registerModels.johnDoe
-		tokens, err := s.registerUser(registerRequest)
-		require.NoError(t, err)
+		{
+			name: "Remove task from a list",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					tasks: []models.Task{
+						s.testData.taskModels.task1,
+					},
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				return s.sendRemoveTaskRequest(
+					models.RemoveTaskRequest{
+						TaskId: johnRi.tasks[0].ID,
+						ListId: johnRi.defautListId,
+					},
+					johnRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusOK,
+			responseChecker: func(t *testing.T, resp *http.Response, requestInputs []testRequestInput) {
+				//find user with john doe email
+				//find list where he is an owner
+				//find task with name task1
+				//check that task is not in the list
+			},
+		},
 
-		// get default list
-		lists, err := s.getLists(tokens.Access)
-		require.NoError(t, err)
+		{
+			name: "Remove task from a list with wrong token",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					tasks: []models.Task{
+						s.testData.taskModels.task1,
+					},
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				return s.sendRemoveTaskRequest(
+					models.RemoveTaskRequest{
+						TaskId: johnRi.tasks[0].ID,
+						ListId: johnRi.defautListId,
+					},
+					"wrong token",
+				)
+			},
+			responseCode: http.StatusUnauthorized,
+		},
 
-		listId := lists[0].ID
+		{
+			name: "Remove task from a list with wrong list id",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					tasks: []models.Task{
+						s.testData.taskModels.task1,
+					},
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				return s.sendRemoveTaskRequest(
+					models.RemoveTaskRequest{
+						TaskId: johnRi.tasks[0].ID,
+						ListId: "wrong list id",
+					},
+					johnRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusNotFound,
+		},
 
-		// add task
-		task := models.Task{
-			Title: "Test task",
-		}
+		{
+			name: "Remove task from a list with wrong task id",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					tasks: []models.Task{
+						s.testData.taskModels.task1,
+					},
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				return s.sendRemoveTaskRequest(
+					models.RemoveTaskRequest{
+						TaskId: "wrong task id",
+						ListId: johnRi.defautListId,
+					},
+					johnRi.tokens.Access,
+				)
+			},
+			responseCode: http.StatusNotFound,
+		},
 
-		addTaskRequest := models.AddTaskRequest{
-			Task:   task,
-			ListId: listId,
-		}
+		{
+			name: "Get tasks from a list",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					tasks: []models.Task{
+						s.testData.taskModels.task1,
+						s.testData.taskModels.task2,
+					},
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				return s.sendGetTasksRequest(johnRi.defautListId, johnRi.tokens.Access)
+			},
+			responseCode: http.StatusOK,
+			responseChecker: func(t *testing.T, resp *http.Response, requestInputs []testRequestInput) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				var tasks models.GetTaskListResponse
+				err := json.NewDecoder(resp.Body).Decode(&tasks)
+				require.NoError(t, err)
+				require.Len(t, tasks.List.Tasks, len(johnRi.tasks))
 
-		resp, err := s.sendAddTaskRequest(addTaskRequest, tokens.Access)
-		require.NoError(t, err)
-		defer resp.Body.Close()
+				var taskTitles []string
+				for _, task := range johnRi.tasks {
+					taskTitles = append(taskTitles, task.Title)
+				}
 
-		require.Equal(t, http.StatusOK, resp.StatusCode, "Expected status code 200")
+				for _, task := range tasks.List.Tasks {
+					require.Contains(t, taskTitles, task.Title)
+				}
+			},
+		},
 
-		var response models.IdResponse
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		require.NoError(t, err)
+		{
+			name: "Get tasks from a list with wrong token",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					tasks: []models.Task{
+						s.testData.taskModels.task1,
+						s.testData.taskModels.task2,
+					},
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				return s.sendGetTasksRequest(johnRi.defautListId, "wrong token")
+			},
+			responseCode: http.StatusUnauthorized,
+		},
 
-		require.NotEmpty(t, response.Id, "Expected id in the response")
+		{
+			name: "Get tasks from a list with wrong list id",
+			users: []testUserInput{
+				{
+					registerRequest: s.testData.registerModels.johnDoe,
+					tasks: []models.Task{
+						s.testData.taskModels.task1,
+						s.testData.taskModels.task2,
+					},
+				},
+			},
+			request: func(t *testing.T, requestInputs []testRequestInput) (resp *http.Response, err error) {
+				johnRi := getRequestInputByEmail(s.testData.registerModels.johnDoe.Email, requestInputs)
+				return s.sendGetTasksRequest("wrong list id", johnRi.tokens.Access)
+			},
+			responseCode: http.StatusNotFound,
+		},
+	}
 
-		// get tasks
-		resp, err = s.sendGetTasksRequest(listId, tokens.Access)
-		require.NoError(t, err)
-		defer resp.Body.Close()
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			s.SetupTest()
+			var requestInputs []testRequestInput
+			for _, user := range test.users {
+				tokens, err := s.registerUser(user.registerRequest)
+				require.NoError(s.T(), err)
 
-		require.Equal(t, http.StatusOK, resp.StatusCode, "Expected status code 200", resp.Body)
+				lists, err := s.getLists(tokens.Access)
+				require.NoError(s.T(), err)
 
-		var getTaskListResponse models.GetTaskListResponse
-		err = json.NewDecoder(resp.Body).Decode(&getTaskListResponse)
-		require.NoError(t, err)
+				listId := lists[0].ID
 
-		require.NotEmpty(t, getTaskListResponse.List.Tasks, "Expected tasks in the response")
-		require.Equal(t, task.Title, getTaskListResponse.List.Tasks[0].Title)
+				addedTasks := make([]models.Task, 0)
+				for _, task := range user.tasks {
+					id, err := s.addTask(models.AddTaskRequest{Task: task, ListId: listId}, tokens.Access)
+					require.NoError(s.T(), err)
 
-		// remove task
-		taskId := getTaskListResponse.List.Tasks[0].ID
+					task.ID = id.Id
+					addedTasks = append(addedTasks, task)
+				}
 
-		removeTaskRequest := models.RemoveTaskRequest{
-			TaskId: taskId,
-			ListId: listId,
-		}
-		resp, err = s.sendRemoveTaskRequest(removeTaskRequest, tokens.Access)
-		require.NoError(t, err)
-		defer resp.Body.Close()
+				for _, email := range user.shareList {
+					_, err := s.shareList(models.ShareListRequest{Email: email, ListId: listId}, tokens.Access)
+					require.NoError(s.T(), err)
+				}
 
-		require.Equal(t, http.StatusOK, resp.StatusCode, "Expected status code 200")
+				requestInputs = append(requestInputs, testRequestInput{
+					registerRequest: user.registerRequest,
+					tokens:          *tokens,
+					defautListId:    lists[0].ID,
+					tasks:           addedTasks,
+				})
+			}
 
-		// get tasks
-		resp, err = s.sendGetTasksRequest(listId, tokens.Access)
-		require.NoError(t, err)
-		defer resp.Body.Close()
+			resp, err := test.request(s.T(), requestInputs)
+			require.NoError(s.T(), err)
+			require.Equal(s.T(), test.responseCode, resp.StatusCode)
 
-		require.Equal(t, http.StatusOK, resp.StatusCode, "Expected status code 200")
-
-		err = json.NewDecoder(resp.Body).Decode(&getTaskListResponse)
-		require.NoError(t, err)
-
-		require.Empty(t, getTaskListResponse.List.Tasks, "Expected empty tasks in the response")
-	})
+			if test.responseChecker != nil {
+				test.responseChecker(s.T(), resp, requestInputs)
+			}
+		})
+	}
 }

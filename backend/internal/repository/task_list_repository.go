@@ -210,6 +210,44 @@ func (this *TaskListRepository) GetTaskLists(userId string) ([]models.TaskListSh
 	return result, nil
 }
 
+func (this *TaskListRepository) CheckTaskListExists(id string) (bool, error) {
+	mongoId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return false, err
+	}
+	var list *mongodto.TaskList
+	err = this.getTaskListCollection().FindOne(nil, mongodto.TaskList{ID: mongoId}).Decode(&list)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (this *TaskListRepository) CheckTaskExists(listId string, taskId string) (bool, error) {
+	mongoListId, err := primitive.ObjectIDFromHex(listId)
+	if err != nil {
+		return false, err
+	}
+	mongoTaskId, err := primitive.ObjectIDFromHex(taskId)
+	if err != nil {
+		return false, err
+	}
+
+	var list *mongodto.TaskList
+	err = this.getTaskListCollection().FindOne(nil, mongodto.TaskList{ID: mongoListId}).Decode(&list)
+	if err != nil {
+		return false, err
+	}
+
+	for _, t := range list.Tasks {
+		if t.ID == mongoTaskId {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func (this *TaskListRepository) getTaskListCollection() *mongo.Collection {
 	return this.Mongo.Database(this.Config.DbName).Collection("task_lists")
 }
