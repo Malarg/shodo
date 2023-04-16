@@ -11,8 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-//TODO: sometimes logging dont work properly. find out why
-
 func (s *APITestSuite) TestRegisterNewUser() {
 	s.T().Run("Register new user", func(t *testing.T) {
 		request := s.testData.registerModels.johnDoe
