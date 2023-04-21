@@ -95,7 +95,65 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/lists/share/start": {
+        "/api/v1/list/:id": {
+            "post": {
+                "description": "Get tasks by list id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lists"
+                ],
+                "summary": "Get tasks by list id",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetTaskListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/lists": {
+            "get": {
+                "description": "Get all lists for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lists"
+                ],
+                "summary": "Get all lists for a user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetListsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/share/start": {
             "post": {
                 "description": "Start share list with user",
                 "consumes": [
@@ -115,7 +173,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ShareUserRequest"
+                            "$ref": "#/definitions/models.ShareListRequest"
                         }
                     }
                 ],
@@ -135,7 +193,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/lists/share/stop": {
+        "/api/v1/share/stop": {
             "post": {
                 "description": "Stop share list with user",
                 "consumes": [
@@ -155,7 +213,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ShareUserRequest"
+                            "$ref": "#/definitions/models.ShareListRequest"
                         }
                     }
                 ],
@@ -203,7 +261,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.EmptyResponse"
+                            "$ref": "#/definitions/models.IdResponse"
                         }
                     },
                     "400": {
@@ -254,6 +312,35 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/users": {
+            "get": {
+                "description": "Get all users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get all users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserShort"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -285,7 +372,37 @@ const docTemplate = `{
         "models.Error": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "integer"
+                },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetListsResponse": {
+            "type": "object",
+            "properties": {
+                "lists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TaskListShort"
+                    }
+                }
+            }
+        },
+        "models.GetTaskListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "$ref": "#/definitions/models.TaskList"
+                }
+            }
+        },
+        "models.IdResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "string"
                 }
             }
@@ -301,7 +418,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 8
                 }
             }
         },
@@ -317,15 +436,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 8
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 32,
+                    "minLength": 3
                 }
             }
         },
         "models.RemoveTaskRequest": {
             "type": "object",
+            "required": [
+                "list_id",
+                "task_id"
+            ],
             "properties": {
                 "list_id": {
                     "type": "string"
@@ -335,13 +462,17 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ShareUserRequest": {
+        "models.ShareListRequest": {
             "type": "object",
+            "required": [
+                "email",
+                "list_id"
+            ],
             "properties": {
-                "list_id": {
+                "email": {
                     "type": "string"
                 },
-                "user_id": {
+                "list_id": {
                     "type": "string"
                 }
             }
@@ -353,6 +484,60 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TaskList": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "shared_with": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Task"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TaskListShort": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserShort": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

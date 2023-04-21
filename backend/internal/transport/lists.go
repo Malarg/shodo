@@ -164,7 +164,7 @@ func (this *TaskListHandler) GetTaskList(c *gin.Context) {
 // @Tags lists
 // @Accept  json
 // @Produce  json
-// @Param data body models.ShareUserRequest true "Share data"
+// @Param data body models.ShareListRequest true "Share data"
 // @Success 200 {object} models.EmptyResponse
 // @Failure 400 {object} models.Error
 // @Router /api/v1/share/start [post]
@@ -202,7 +202,7 @@ func (this *TaskListHandler) StartShareWithUser(c *gin.Context) {
 // @Tags lists
 // @Accept  json
 // @Produce  json
-// @Param data body models.ShareUserRequest true "Share data"
+// @Param data body models.ShareListRequest true "Share data"
 // @Success 200 {object} models.EmptyResponse
 // @Failure 400 {object} models.Error
 // @Router /api/v1/share/stop [post]

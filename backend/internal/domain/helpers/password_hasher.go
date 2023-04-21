@@ -15,7 +15,7 @@ func HashPassword(password string) (string, error) {
 		ErrPasswordTooLong := errors.New("password length should not exceed 72 bytes")
 		return "", ErrPasswordTooLong
 	}
-	//TODO: add salt
+
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), DefaultCost)
 	return string(bytes), err
 }

@@ -4,7 +4,7 @@ run:
 	CONFIG_NAME=$(localConfigName) docker-compose up --build -d
 	docker-compose logs -f backend
 swagger:
-	swag init -d ./cmd/app,./internal/app,./internal/transport,./internal/models
+	swag init -d ./cmd/app,./internal/app,./internal/transport,./models
 
 testConfigName ?= test
 
