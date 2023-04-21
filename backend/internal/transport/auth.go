@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"context"
 	"net/http"
 	"shodo/internal/domain/services"
 	"shodo/models"
@@ -33,7 +34,10 @@ func (this *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	tokens, err := this.RegistrationService.Register(request)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
+	defer cancel()
+
+	tokens, err := this.RegistrationService.Register(ctx, request)
 	if err != nil {
 		this.Logger.Error("Error while registering user", zap.Error(err), zap.Any("request", request))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})

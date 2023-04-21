@@ -19,11 +19,11 @@ type TaskListRepository struct {
 	Config *config.Config
 }
 
-func (this *TaskListRepository) CreateTaskList(taskList *models.TaskList) error {
+func (this *TaskListRepository) CreateTaskList(ctx context.Context, taskList *models.TaskList) error {
 	taskListDto := mongodto.TaskList{}
 	taskListDto.FromModel(*taskList)
 
-	_, err := this.getTaskListCollection().InsertOne(nil, taskListDto)
+	_, err := this.getTaskListCollection().InsertOne(ctx, taskListDto)
 	if err != nil {
 		return err
 	}

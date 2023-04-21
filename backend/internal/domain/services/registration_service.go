@@ -6,6 +6,8 @@ import (
 	"shodo/internal/domain/helpers"
 	"shodo/internal/repository"
 	"shodo/models"
+
+	"golang.org/x/net/context"
 )
 
 const (
@@ -18,7 +20,7 @@ type RegistrationService struct {
 	TokensService   *TokensService
 }
 
-func (this *RegistrationService) Register(request models.RegisterUserRequest) (*models.AuthTokens, error) {
+func (this *RegistrationService) Register(ctx context.Context, request models.RegisterUserRequest) (*models.AuthTokens, error) {
 	if err := this.checkIfCanRegister(request); err != nil {
 		return nil, err
 	}
@@ -34,7 +36,7 @@ func (this *RegistrationService) Register(request models.RegisterUserRequest) (*
 		return nil, err
 	}
 
-	this.TaskListService.CreateDefaultTaskList(request.Username, userId)
+	this.TaskListService.CreateDefaultTaskList(ctx, request.Username, userId)
 	return tokens, nil
 }
 

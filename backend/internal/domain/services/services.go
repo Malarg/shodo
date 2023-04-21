@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"shodo/models"
 )
 
@@ -10,14 +11,14 @@ type Authentication interface {
 }
 
 type Registration interface {
-	Register(request models.RegisterUserRequest) (*models.AuthTokens, error)
+	Register(ctx context.Context, request models.RegisterUserRequest) (*models.AuthTokens, error)
 }
 
 type TaskList interface {
-	CreateDefaultTaskList(username string, ownerId string)
+	CreateDefaultTaskList(ctx context.Context, username string, ownerId string)
 	GetTaskList(listId *string, userToken string) (models.TaskList, *models.Error)
 	GetTaskLists(userToken string) ([]models.TaskListShort, error)
-	CreateTaskList(list *models.TaskList)
+	CreateTaskList(ctx context.Context, list *models.TaskList)
 	AddTaskToList(listId *string, task *models.Task, userToken string) (*string, *models.Error)
 	RemoveTaskFromList(listId *string, taskId *string, userToken string) *models.Error
 	IsEditListAllowed(listId *string, userToken string) (bool, error)

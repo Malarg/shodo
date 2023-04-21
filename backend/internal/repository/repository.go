@@ -1,9 +1,12 @@
 package repository
 
-import "shodo/models"
+import (
+	"context"
+	"shodo/models"
+)
 
 type TaskList interface {
-	CreateTaskList(taskList *models.TaskList) error
+	CreateTaskList(ctx context.Context, taskList *models.TaskList) error
 	DeleteTaskList(id string) error
 	AddUserToList(listId string, email string) error
 	RemoveUserFromList(listId string, email string) error
