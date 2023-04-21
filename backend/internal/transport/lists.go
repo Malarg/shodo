@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"context"
 	"net/http"
 	"shodo/internal/domain/services"
 	"shodo/models"
@@ -36,7 +37,10 @@ func (this *TaskListHandler) GetLists(c *gin.Context) {
 		return
 	}
 
-	lists, err := this.TaskListService.GetTaskLists(token)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
+	defer cancel()
+
+	lists, err := this.TaskListService.GetTaskLists(ctx, token)
 	if err != nil {
 		this.Logger.Error("Error while getting lists", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -71,7 +75,10 @@ func (this *TaskListHandler) AddTaskToList(c *gin.Context) {
 		return
 	}
 
-	res, serviceError := this.TaskListService.AddTaskToList(&request.ListId, &request.Task, token)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
+	defer cancel()
+
+	res, serviceError := this.TaskListService.AddTaskToList(ctx, &request.ListId, &request.Task, token)
 	if serviceError != nil {
 		this.Logger.Error("Error while adding task to list", zap.Error(err), zap.Any("request", request))
 		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
@@ -106,7 +113,10 @@ func (this *TaskListHandler) DeleteTaskFromList(c *gin.Context) {
 		return
 	}
 
-	serviceError := this.TaskListService.RemoveTaskFromList(&request.ListId, &request.TaskId, token)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
+	defer cancel()
+
+	serviceError := this.TaskListService.RemoveTaskFromList(ctx, &request.ListId, &request.TaskId, token)
 	if serviceError != nil {
 		this.Logger.Error("Error while removing task from list", zap.Error(err), zap.Any("request", request))
 		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
@@ -135,7 +145,10 @@ func (this *TaskListHandler) GetTaskList(c *gin.Context) {
 
 	listId := c.Param("id")
 
-	list, serviceError := this.TaskListService.GetTaskList(&listId, token)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
+	defer cancel()
+
+	list, serviceError := this.TaskListService.GetTaskList(ctx, &listId, token)
 	if serviceError != nil {
 		this.Logger.Error("Error while getting list", zap.Any("error", serviceError), zap.Any("listId", listId))
 		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
@@ -170,7 +183,10 @@ func (this *TaskListHandler) StartShareWithUser(c *gin.Context) {
 		return
 	}
 
-	serviceError := this.TaskListService.StartShareWithUser(&request.ListId, &request.Email, token)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
+	defer cancel()
+
+	serviceError := this.TaskListService.StartShareWithUser(ctx, &request.ListId, &request.Email, token)
 	if serviceError != nil {
 		this.Logger.Error("Error while sharing list with user", zap.Error(err), zap.Any("request", request))
 		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
@@ -205,7 +221,10 @@ func (this *TaskListHandler) StopShareWithUser(c *gin.Context) {
 		return
 	}
 
-	serviceError := this.TaskListService.StopShareWithUser(&request.ListId, &request.Email, token)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
+	defer cancel()
+
+	serviceError := this.TaskListService.StopShareWithUser(ctx, &request.ListId, &request.Email, token)
 	if serviceError != nil {
 		this.Logger.Error("Error while stop share list with user", zap.Error(err), zap.Any("request", request))
 		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
