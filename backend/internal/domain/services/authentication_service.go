@@ -6,6 +6,8 @@ import (
 	"shodo/internal/domain/helpers"
 	"shodo/internal/repository"
 	"shodo/models"
+
+	"golang.org/x/net/context"
 )
 
 type AuthenticationService struct {
@@ -13,8 +15,8 @@ type AuthenticationService struct {
 	TokensService *TokensService
 }
 
-func (this *AuthenticationService) LogIn(request models.LoginUserRequest) (*models.AuthTokens, error) {
-	user, err := this.Repository.GetUserByEmail(request.Email)
+func (this *AuthenticationService) LogIn(ctx context.Context, request models.LoginUserRequest) (*models.AuthTokens, error) {
+	user, err := this.Repository.GetUserByEmail(ctx, request.Email)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("user with email %s not found", request.Email))
 	}

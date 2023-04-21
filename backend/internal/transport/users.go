@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"context"
 	"net/http"
 	"shodo/internal/domain/services"
 
@@ -32,7 +33,10 @@ func (this *UsersHandler) GetAllUsers(c *gin.Context) {
 		return
 	}
 
-	users, err := this.UsersService.GetAllUsers(token)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
+	defer cancel()
+
+	users, err := this.UsersService.GetAllUsers(ctx, token)
 	if err != nil {
 		this.Logger.Error("Error while getting users", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

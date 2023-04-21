@@ -6,7 +6,7 @@ import (
 )
 
 type Authentication interface {
-	LogIn(request models.LoginUserRequest) (*models.AuthTokens, error)
+	LogIn(ctx context.Context, request models.LoginUserRequest) (*models.AuthTokens, error)
 	IsAuthorized(token string) (bool, error)
 }
 
@@ -24,10 +24,6 @@ type TaskList interface {
 	IsEditListAllowed(ctx context.Context, listId *string, userToken string) (bool, error)
 	StartShareWithUser(ctx context.Context, listId *string, email *string, userToken string) *models.Error
 	StopShareWithUser(ctx context.Context, listId *string, email *string, userToken string) *models.Error
-}
-
-type Users interface {
-	GetAllUsers(userToken string) ([]models.UserShort, error)
 }
 
 type Tokens interface {

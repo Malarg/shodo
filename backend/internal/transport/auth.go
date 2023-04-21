@@ -65,7 +65,10 @@ func (this *AuthHandler) LogIn(c *gin.Context) {
 		return
 	}
 
-	tokens, err := this.AuthenticationService.LogIn(request)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
+	defer cancel()
+
+	tokens, err := this.AuthenticationService.LogIn(ctx, request)
 	if err != nil {
 		this.Logger.Error("Error while logging in user", zap.Error(err), zap.Any("request", request))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})

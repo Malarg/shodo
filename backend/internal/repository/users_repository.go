@@ -15,46 +15,46 @@ type UsersRepository struct {
 	Config *config.Config
 }
 
-func (this *UsersRepository) CreateUser(user models.User) (string, error) {
+func (this *UsersRepository) CreateUser(ctx context.Context, user models.User) (string, error) {
 	mongoUser := mongodto.User{}
 	mongoUser.FromModel(user)
 
-	result, err := this.getUsersCollection().InsertOne(context.TODO(), mongoUser)
+	result, err := this.getUsersCollection().InsertOne(ctx, mongoUser)
 	return result.InsertedID.(primitive.ObjectID).Hex(), err
 }
 
 // TODO: checking is not repository responsibility
-func (this *UsersRepository) CheckUserExists(email string) (bool, error) {
-	count, err := this.getUsersCollection().CountDocuments(context.TODO(), mongodto.User{Email: email})
+func (this *UsersRepository) CheckUserExists(ctx context.Context, email string) (bool, error) {
+	count, err := this.getUsersCollection().CountDocuments(ctx, mongodto.User{Email: email})
 	return count > 0, err
 }
 
-func (this *UsersRepository) DeleteUser(id string) error {
+func (this *UsersRepository) DeleteUser(ctx context.Context, id string) error {
 	mongoId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
 
-	_, err = this.getUsersCollection().DeleteOne(context.TODO(), mongodto.User{ID: mongoId})
+	_, err = this.getUsersCollection().DeleteOne(ctx, mongodto.User{ID: mongoId})
 	return err
 }
 
-func (this *UsersRepository) GetUserByEmail(email string) (models.User, error) {
+func (this *UsersRepository) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
 	var user mongodto.User
-	err := this.getUsersCollection().FindOne(context.TODO(), mongodto.User{Email: email}).Decode(&user)
+	err := this.getUsersCollection().FindOne(ctx, mongodto.User{Email: email}).Decode(&user)
 	return user.ToModel(), err
 }
 
-func (this *UsersRepository) GetAllUsers(id string) ([]models.UserShort, error) {
+func (this *UsersRepository) GetAllUsers(ctx context.Context, id string) ([]models.UserShort, error) {
 	var users []models.UserShort
 
-	cursor, err := this.getUsersCollection().Find(context.TODO(), mongodto.User{})
+	cursor, err := this.getUsersCollection().Find(ctx, mongodto.User{})
 	if err != nil {
 		return users, err
 	}
-	defer cursor.Close(context.TODO())
+	defer cursor.Close(ctx)
 
-	for cursor.Next(context.TODO()) {
+	for cursor.Next(ctx) {
 		var user mongodto.UserShort
 		err = cursor.Decode(&user)
 		if err != nil {
@@ -70,14 +70,14 @@ func (this *UsersRepository) GetAllUsers(id string) ([]models.UserShort, error) 
 	return users, nil
 }
 
-func (this *UsersRepository) GetUserById(id string) (models.User, error) {
+func (this *UsersRepository) GetUserById(ctx context.Context, id string) (models.User, error) {
 	mongoId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return models.User{}, err
 	}
 
 	var user mongodto.User
-	err = this.getUsersCollection().FindOne(context.TODO(), mongodto.User{ID: mongoId}).Decode(&user)
+	err = this.getUsersCollection().FindOne(ctx, mongodto.User{ID: mongoId}).Decode(&user)
 	return user.ToModel(), err
 }
 

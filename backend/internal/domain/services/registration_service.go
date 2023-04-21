@@ -21,18 +21,18 @@ type RegistrationService struct {
 }
 
 func (this *RegistrationService) Register(ctx context.Context, request models.RegisterUserRequest) (*models.AuthTokens, error) {
-	if err := this.checkIfCanRegister(request); err != nil {
+	if err := this.checkIfCanRegister(ctx, request); err != nil {
 		return nil, err
 	}
 
-	userId, err := this.putNewUserToDb(request)
+	userId, err := this.putNewUserToDb(ctx, request)
 	if err != nil {
 		return nil, err
 	}
 
 	tokens, err := this.TokensService.GenerateAndSaveTokens(userId)
 	if err != nil {
-		this.Repository.DeleteUser(userId)
+		this.Repository.DeleteUser(ctx, userId)
 		return nil, err
 	}
 
@@ -40,8 +40,8 @@ func (this *RegistrationService) Register(ctx context.Context, request models.Re
 	return tokens, nil
 }
 
-func (this *RegistrationService) checkIfCanRegister(request models.RegisterUserRequest) error {
-	userExists, err := this.Repository.CheckUserExists(request.Email)
+func (this *RegistrationService) checkIfCanRegister(ctx context.Context, request models.RegisterUserRequest) error {
+	userExists, err := this.Repository.CheckUserExists(ctx, request.Email)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (this *RegistrationService) checkIfCanRegister(request models.RegisterUserR
 	return nil
 }
 
-func (this *RegistrationService) putNewUserToDb(request models.RegisterUserRequest) (string, error) {
+func (this *RegistrationService) putNewUserToDb(ctx context.Context, request models.RegisterUserRequest) (string, error) {
 	hashedPassword, err := helpers.HashPassword(request.Password)
 	if err != nil {
 		return "", err
@@ -69,5 +69,5 @@ func (this *RegistrationService) putNewUserToDb(request models.RegisterUserReque
 		Password: hashedPassword,
 	}
 
-	return this.Repository.CreateUser(user)
+	return this.Repository.CreateUser(ctx, user)
 }

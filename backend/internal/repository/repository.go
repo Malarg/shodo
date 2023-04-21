@@ -19,10 +19,10 @@ type TaskList interface {
 }
 
 type Users interface {
-	CreateUser(user models.User) (string, error)
-	CheckUserExists(email string) (bool, error)
-	DeleteUser(id string) error
-	GetAllUsers(id string) ([]models.UserShort, error)
-	GetUserByEmail(email string) (models.User, error)
-	GetUserById(id string) (models.User, error)
+	CreateUser(ctx context.Context, user models.User) (string, error)
+	CheckUserExists(ctx context.Context, email string) (bool, error)
+	DeleteUser(ctx context.Context, id string) error
+	GetAllUsers(ctx context.Context, id string) ([]models.UserShort, error)
+	GetUserByEmail(ctx context.Context, email string) (models.User, error)
+	GetUserById(ctx context.Context, id string) (models.User, error)
 }
