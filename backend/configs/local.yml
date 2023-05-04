@@ -1,0 +1,4 @@
+db_name: shodo
+default_task_list_title: Shoppings
+mongo_host: mongodb
+redis_host: redis
