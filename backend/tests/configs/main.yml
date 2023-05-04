@@ -1,4 +1,0 @@
-db_name: shodo_test
-default_task_list_title: Shoppings
-mongo_host: localhost
-redis_host: localhost
