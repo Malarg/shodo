@@ -5,7 +5,7 @@ import "github.com/spf13/viper"
 type Config struct {
 	DbName               string `mapstructure:"db_name"`
 	DefaultTaskListTitle string `mapstructure:"default_task_list_title"`
-	MongoHost            string `mapstructure:"mongo_host"`
+	MongoUrl             string `mapstructure:"mongo_url"`
 	RedisHost            string `mapstructure:"redis_host"`
 }
 

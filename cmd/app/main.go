@@ -34,30 +34,37 @@ func main() {
 		panic(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	mongoUrl := fmt.Sprintf("mongodb://admin:password@%s:27017", config.MongoHost)
-	fmt.Println(mongoUrl)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoUrl))
+	mongoClient, err := createMongoClient(context.Background(), config)
 	if err != nil {
 		panic(err)
 	}
-	defer disconnectMongoDB(ctx, client)
+	defer disconnectMongoDB(mongoClient)
 
 	redisAddr := fmt.Sprintf("%s:6379", config.RedisHost)
 	fmt.Println(redisAddr)
-	rdb := redis.NewClient(&redis.Options{
+	redisClient := redis.NewClient(&redis.Options{
 		Addr:     redisAddr,
 		Password: "",
 		DB:       0,
 	})
-	defer rdb.Close()
+	defer redisClient.Close()
 
-	app.Run(logger, config, client, rdb)
+	app.Run(logger, config, mongoClient, redisClient)
 }
 
-func disconnectMongoDB(ctx context.Context, client *mongo.Client) {
-	if err := client.Disconnect(ctx); err != nil {
+func createMongoClient(ctx context.Context, config *config.Config) (*mongo.Client, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	mongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(config.MongoUrl))
+	if err != nil {
+		panic(err)
+	}
+	return mongoClient, nil
+}
+
+func disconnectMongoDB(client *mongo.Client) {
+	if err := client.Disconnect(nil); err != nil {
 		panic(err)
 	}
 }

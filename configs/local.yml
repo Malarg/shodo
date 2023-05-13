@@ -1,4 +1,4 @@
 db_name: shodo
 default_task_list_title: Shoppings
-mongo_host: mongodb
+mongo_url: mongodb://admin:password@mongodb:27017
 redis_host: redis

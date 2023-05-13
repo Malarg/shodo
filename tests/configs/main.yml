@@ -1,4 +1,4 @@
 db_name: shodo_test
 default_task_list_title: Shoppings
-mongo_host: localhost
+mongo_url: mongodb://admin:password@localhost:27017
 redis_host: localhost

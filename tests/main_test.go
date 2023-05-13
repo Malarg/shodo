@@ -2,7 +2,6 @@ package tests
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -23,9 +22,7 @@ func (s *APITestSuite) SetupSuite() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	mongoUrl := fmt.Sprintf("mongodb://admin:password@%s:27017", s.Config.MongoHost)
-	fmt.Println(mongoUrl)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoUrl))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(s.Config.MongoUrl))
 	if err != nil {
 		s.FailNow("Failed to connect to mongo", err)
 	}

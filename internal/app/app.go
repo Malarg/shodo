@@ -17,11 +17,11 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func Run(logger *zap.Logger, config *config.Config, client *mongo.Client, rdb *redis.Client) {
+func Run(logger *zap.Logger, config *config.Config, mongoClient *mongo.Client, redisClient *redis.Client) {
 	//TODO: add DI?
-	tokensRepository := repository.TokensRepository{Redis: rdb}
-	usersRepository := repository.UsersRepository{Client: client, Config: config}
-	taskListRepository := repository.TaskListRepository{Mongo: client, Config: config}
+	tokensRepository := repository.TokensRepository{Redis: redisClient}
+	usersRepository := repository.UsersRepository{Mongo: mongoClient, Config: config}
+	taskListRepository := repository.TaskListRepository{Mongo: mongoClient, Config: config}
 
 	tasksService := services.TaskListService{TaskListRepository: &taskListRepository, UsersRepository: &usersRepository}
 	tokensService := services.TokensService{TokensRepository: &tokensRepository}

@@ -11,7 +11,7 @@ import (
 )
 
 type UsersRepository struct {
-	Client *mongo.Client
+	Mongo  *mongo.Client
 	Config *config.Config
 }
 
@@ -82,5 +82,5 @@ func (this *UsersRepository) GetUserById(ctx context.Context, id string) (models
 }
 
 func (this *UsersRepository) getUsersCollection() *mongo.Collection {
-	return this.Client.Database(this.Config.DbName).Collection("users")
+	return this.Mongo.Database(this.Config.DbName).Collection("users")
 }
