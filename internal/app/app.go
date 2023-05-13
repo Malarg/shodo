@@ -1,55 +1,23 @@
 package app
 
 import (
-	"context"
-	"fmt"
-	"os"
-	"shodo/internal/config"
 	"shodo/internal/domain/services"
 	"shodo/internal/repository"
 	"shodo/internal/transport"
-	"time"
+
+	"github.com/go-redis/redis"
+
+	"shodo/internal/config"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func Run(r *gin.Engine) {
-
-	Logger, err := zap.NewProduction()
-	if err != nil {
-		panic(err)
-	}
-
-	configName := os.Getenv("CONFIG_NAME")
-	config, err := config.Init(configName)
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	mongoUrl := fmt.Sprintf("mongodb://admin:password@%s:27017", config.MongoHost)
-	fmt.Println(mongoUrl)
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoUrl))
-	if err != nil {
-		panic(err)
-	}
-	defer disconnectMongoDB(ctx, client)
-
-	redisAddr := fmt.Sprintf("%s:6379", config.RedisHost)
-	fmt.Println(redisAddr)
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     redisAddr,
-		Password: "",
-		DB:       0,
-	})
-	defer rdb.Close()
-
+func Run(logger *zap.Logger, config *config.Config, client *mongo.Client, rdb *redis.Client) {
 	//TODO: add DI?
 	tokensRepository := repository.TokensRepository{Redis: rdb}
 	usersRepository := repository.UsersRepository{Client: client, Config: config}
@@ -61,9 +29,12 @@ func Run(r *gin.Engine) {
 	registrationService := services.RegistrationService{Repository: &usersRepository, TaskListService: &tasksService, TokensService: &tokensService}
 	authenticationService := services.AuthenticationService{Repository: &usersRepository, TokensService: &tokensService}
 
-	authHandler := transport.AuthHandler{RegistrationService: &registrationService, AuthenticationService: &authenticationService, Logger: Logger}
-	tasksHandler := transport.TaskListHandler{TaskListService: &tasksService, AuthenticationService: &authenticationService, Logger: Logger}
-	usersHandler := transport.UsersHandler{UsersService: &usersService, AuthenticationService: &authenticationService, Logger: Logger}
+	authHandler := transport.AuthHandler{RegistrationService: &registrationService, AuthenticationService: &authenticationService, Logger: logger}
+	tasksHandler := transport.TaskListHandler{TaskListService: &tasksService, AuthenticationService: &authenticationService, Logger: logger}
+	usersHandler := transport.UsersHandler{UsersService: &usersService, AuthenticationService: &authenticationService, Logger: logger}
+
+	r := gin.Default()
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1 := r.Group("/api/v1")
 	{
@@ -93,10 +64,4 @@ func Run(r *gin.Engine) {
 	v1.GET("/ping", transport.PingHandler)
 
 	r.Run()
-}
-
-func disconnectMongoDB(ctx context.Context, client *mongo.Client) {
-	if err := client.Disconnect(ctx); err != nil {
-		panic(err)
-	}
 }

@@ -1,4 +1,4 @@
-/backend/data
-/backend/dump.rdb
-/backend/.env
+/data
+dump.rdb
+.env
 .DS_Store
