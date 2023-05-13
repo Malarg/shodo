@@ -38,7 +38,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer disconnectMongoDB(mongoClient)
+	defer disconnectMongoDB(mongoClient, logger)
 
 	redisAddr := fmt.Sprintf("%s:6379", config.RedisHost)
 	fmt.Println(redisAddr)
@@ -63,8 +63,8 @@ func createMongoClient(ctx context.Context, config *config.Config) (*mongo.Clien
 	return mongoClient, nil
 }
 
-func disconnectMongoDB(client *mongo.Client) {
+func disconnectMongoDB(client *mongo.Client, logger *zap.Logger) {
 	if err := client.Disconnect(nil); err != nil {
-		panic(err)
+		logger.Error("Failed to disconnect MongoDB", zap.Error(err))
 	}
 }

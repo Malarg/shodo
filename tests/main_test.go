@@ -47,7 +47,7 @@ func (s *APITestSuite) TearDownSuite() {
 	defer cancel()
 
 	if err := s.db.Disconnect(ctx); err != nil {
-		panic(err)
+		s.FailNow("Failed to disconnect from mongo", err)
 	}
 }
 
