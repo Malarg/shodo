@@ -3,9 +3,10 @@ package services
 import (
 	"errors"
 	"fmt"
-	"shodo/internal/domain/helpers"
 	"shodo/internal/repository"
 	"shodo/models"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"golang.org/x/net/context"
 )
@@ -25,7 +26,7 @@ func (this *RegistrationService) Register(ctx context.Context, request models.Re
 		return nil, err
 	}
 
-	userId, err := this.putNewUserToDb(ctx, request)
+	userId, err := this.createUser(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -57,8 +58,8 @@ func (this *RegistrationService) checkIfCanRegister(ctx context.Context, request
 	return nil
 }
 
-func (this *RegistrationService) putNewUserToDb(ctx context.Context, request models.RegisterUserRequest) (string, error) {
-	hashedPassword, err := helpers.HashPassword(request.Password)
+func (this *RegistrationService) createUser(ctx context.Context, request models.RegisterUserRequest) (string, error) {
+	hashedPassword, err := hashPassword(request.Password)
 	if err != nil {
 		return "", err
 	}
@@ -70,4 +71,18 @@ func (this *RegistrationService) putNewUserToDb(ctx context.Context, request mod
 	}
 
 	return this.Repository.CreateUser(ctx, user)
+}
+
+const (
+	DefaultCost int = 10
+)
+
+func hashPassword(password string) (string, error) {
+	if len(password) > 36 {
+		ErrPasswordTooLong := errors.New("password length should not exceed 72 bytes")
+		return "", ErrPasswordTooLong
+	}
+
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), DefaultCost)
+	return string(bytes), err
 }

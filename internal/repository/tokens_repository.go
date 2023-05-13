@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"shodo/internal/domain/helpers"
+	t "shodo/internal/domain/tokens"
 	"shodo/models"
 	"time"
 
@@ -13,12 +13,12 @@ type TokensRepository struct {
 }
 
 func (this *TokensRepository) SaveTokens(userId string, tokens *models.AuthTokens) error {
-	status := this.Redis.Set(userId+"_access", tokens.Access, helpers.AccessTokenLifeTime*time.Second)
+	status := this.Redis.Set(userId+"_access", tokens.Access, t.AccessTokenLifeTime*time.Second)
 	if status.Err() != nil {
 		return status.Err()
 	}
 
-	status = this.Redis.Set(userId+"_refresh", tokens.Refresh, helpers.RefreshTokenLifeTime*time.Second)
+	status = this.Redis.Set(userId+"_refresh", tokens.Refresh, t.RefreshTokenLifeTime*time.Second)
 	if status.Err() != nil {
 		return status.Err()
 	}

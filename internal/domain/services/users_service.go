@@ -1,7 +1,7 @@
 package services
 
 import (
-	"shodo/internal/domain/helpers"
+	"shodo/internal/domain/tokens"
 	"shodo/internal/repository"
 	"shodo/models"
 
@@ -13,7 +13,7 @@ type UsersService struct {
 }
 
 func (this *UsersService) GetAllUsers(ctx context.Context, userToken string) ([]models.UserShort, error) {
-	userId, err := helpers.GetUserIdFromToken(userToken)
+	userId, err := tokens.GetUserIdFromToken(userToken)
 	if err != nil {
 		return nil, err
 	}

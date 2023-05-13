@@ -3,9 +3,11 @@ package services
 import (
 	"context"
 	"net/http"
-	"shodo/internal/domain/helpers"
+	"shodo/internal/domain/tokens"
 	"shodo/internal/repository"
 	"shodo/models"
+
+	"golang.org/x/exp/slices"
 )
 
 const (
@@ -28,7 +30,7 @@ func (this *TaskListService) CreateTaskList(ctx context.Context, list *models.Ta
 }
 
 func (this *TaskListService) GetTaskLists(ctx context.Context, userToken string) ([]models.TaskListShort, error) {
-	userId, err := helpers.GetUserIdFromToken(userToken)
+	userId, err := tokens.GetUserIdFromToken(userToken)
 	if err != nil {
 		return nil, err
 	}
@@ -116,12 +118,12 @@ func (this *TaskListService) IsEditListAllowed(ctx context.Context, listId *stri
 		return false, err
 	}
 
-	userId, err := helpers.GetUserIdFromToken(userToken)
+	userId, err := tokens.GetUserIdFromToken(userToken)
 	if err != nil {
 		return false, err
 	}
 
-	if userId == list.Owner || helpers.Contains(list.SharedWith, userId) {
+	if userId == list.Owner || slices.Contains(list.SharedWith, userId) {
 		return true, nil
 	}
 
@@ -129,7 +131,7 @@ func (this *TaskListService) IsEditListAllowed(ctx context.Context, listId *stri
 }
 
 func (this *TaskListService) StartShareWithUser(ctx context.Context, listId *string, email *string, userToken string) *models.Error {
-	selfId, err := helpers.GetUserIdFromToken(userToken)
+	selfId, err := tokens.GetUserIdFromToken(userToken)
 	if err != nil {
 		return &models.Error{Message: err.Error(), Code: http.StatusBadRequest}
 	}
@@ -148,7 +150,7 @@ func (this *TaskListService) StartShareWithUser(ctx context.Context, listId *str
 		return &models.Error{Message: "only list owner can share list", Code: http.StatusForbidden}
 	}
 
-	if helpers.Contains(list.SharedWith, *&user.ID) {
+	if slices.Contains(list.SharedWith, *&user.ID) {
 		return &models.Error{Message: "user already shared", Code: http.StatusBadRequest}
 	}
 
@@ -162,7 +164,7 @@ func (this *TaskListService) StartShareWithUser(ctx context.Context, listId *str
 }
 
 func (this *TaskListService) StopShareWithUser(ctx context.Context, listId *string, email *string, userToken string) *models.Error {
-	selfId, err := helpers.GetUserIdFromToken(userToken)
+	selfId, err := tokens.GetUserIdFromToken(userToken)
 	if err != nil {
 		return &models.Error{Message: err.Error(), Code: http.StatusBadRequest}
 	}
@@ -181,7 +183,7 @@ func (this *TaskListService) StopShareWithUser(ctx context.Context, listId *stri
 		return &models.Error{Message: "only list owner can stop share list", Code: http.StatusForbidden}
 	}
 
-	if !helpers.Contains(list.SharedWith, user.ID) {
+	if !slices.Contains(list.SharedWith, user.ID) {
 		return &models.Error{Message: "user not shared", Code: http.StatusBadRequest}
 	}
 

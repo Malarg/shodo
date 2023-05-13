@@ -1,7 +1,7 @@
 package services
 
 import (
-	"shodo/internal/domain/helpers"
+	"shodo/internal/domain/tokens"
 	"shodo/internal/repository"
 	"shodo/models"
 )
@@ -11,7 +11,7 @@ type TokensService struct {
 }
 
 func (this *TokensService) GenerateAndSaveTokens(userId string) (*models.AuthTokens, error) {
-	tokens, err := helpers.GenerateTokens(userId)
+	tokens, err := tokens.GenerateTokens(userId)
 	if err != nil {
 		return nil, err
 	}

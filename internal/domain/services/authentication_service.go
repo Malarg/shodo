@@ -3,9 +3,11 @@ package services
 import (
 	"errors"
 	"fmt"
-	"shodo/internal/domain/helpers"
+	"shodo/internal/domain/tokens"
 	"shodo/internal/repository"
 	"shodo/models"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"golang.org/x/net/context"
 )
@@ -21,7 +23,7 @@ func (this *AuthenticationService) LogIn(ctx context.Context, request models.Log
 		return nil, errors.New(fmt.Sprintf("user with email %s not found", request.Email))
 	}
 
-	if !helpers.CheckPasswordHash(request.Password, user.Password) {
+	if !checkPasswordHash(request.Password, user.Password) {
 		return nil, errors.New("invalid credentials")
 	}
 
@@ -33,8 +35,13 @@ func (this *AuthenticationService) LogIn(ctx context.Context, request models.Log
 	return tokens, nil
 }
 
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
 func (this *AuthenticationService) IsAuthorized(token string) (bool, error) {
-	userId, err := helpers.GetUserIdFromToken(token)
+	userId, err := tokens.GetUserIdFromToken(token)
 	tokens, err := this.TokensService.GetTokens(userId)
 	if err != nil {
 		return false, err
