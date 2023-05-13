@@ -24,9 +24,9 @@ type UsersHandler struct {
 // @Success 200 {object} models.UserShort
 // @Failure 400 {object} models.Error
 // @Router /api/v1/users [get]
-func (this *UsersHandler) GetAllUsers(c *gin.Context) {
+func (h *UsersHandler) GetAllUsers(c *gin.Context) {
 	token := c.Request.Header.Get(Authorization)
-	isAuthorized, err := this.AuthenticationService.IsAuthorized(token)
+	isAuthorized, err := h.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
 
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -36,9 +36,9 @@ func (this *UsersHandler) GetAllUsers(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
 	defer cancel()
 
-	users, err := this.UsersService.GetAllUsers(ctx, token)
+	users, err := h.UsersService.GetAllUsers(ctx, token)
 	if err != nil {
-		this.Logger.Error("Error while getting users", zap.Error(err))
+		h.Logger.Error("Error while getting users", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

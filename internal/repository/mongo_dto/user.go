@@ -13,24 +13,24 @@ type User struct {
 	Email    string             `bson:"email,omitempty"`
 }
 
-func (this *User) ToModel() models.User {
+func (u *User) ToModel() models.User {
 	return models.User{
-		ID:       this.ID.Hex(),
-		Username: this.Username,
-		Password: this.Password,
-		Email:    this.Email,
+		ID:       u.ID.Hex(),
+		Username: u.Username,
+		Password: u.Password,
+		Email:    u.Email,
 	}
 }
 
-func (this *User) FromModel(user models.User) error {
+func (u *User) FromModel(user models.User) error {
 	var err error
-	this.ID, err = parseOrCreateId(user.ID)
+	u.ID, err = parseOrCreateId(user.ID)
 	if err != nil {
 		return err
 	}
-	this.Username = user.Username
-	this.Password = user.Password
-	this.Email = user.Email
+	u.Username = user.Username
+	u.Password = user.Password
+	u.Email = user.Email
 
 	return nil
 }
@@ -41,10 +41,10 @@ type UserShort struct {
 	Email    string             `bson:"email,omitempty"`
 }
 
-func (this *UserShort) ToModel() models.UserShort {
+func (u *UserShort) ToModel() models.UserShort {
 	return models.UserShort{
-		ID:       this.ID.Hex(),
-		Username: this.Username,
-		Email:    this.Email,
+		ID:       u.ID.Hex(),
+		Username: u.Username,
+		Email:    u.Email,
 	}
 }

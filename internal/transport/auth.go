@@ -26,10 +26,10 @@ type AuthHandler struct {
 // @Success 200 {object} models.AuthTokens
 // @Failure 400 {object} models.Error
 // @Router /api/v1/auth/register [post]
-func (this *AuthHandler) Register(c *gin.Context) {
+func (h *AuthHandler) Register(c *gin.Context) {
 	var request models.RegisterUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		this.Logger.Error("Error while binding json", zap.Error(err), zap.Any("request", c.Request.Body))
+		h.Logger.Error("Error while binding json", zap.Error(err), zap.Any("request", c.Request.Body))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})
 		return
 	}
@@ -37,9 +37,9 @@ func (this *AuthHandler) Register(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
 	defer cancel()
 
-	tokens, err := this.RegistrationService.Register(ctx, request)
+	tokens, err := h.RegistrationService.Register(ctx, request)
 	if err != nil {
-		this.Logger.Error("Error while registering user", zap.Error(err), zap.Any("request", request))
+		h.Logger.Error("Error while registering user", zap.Error(err), zap.Any("request", request))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})
 		return
 	}
@@ -57,10 +57,10 @@ func (this *AuthHandler) Register(c *gin.Context) {
 // @Success 200 {object} models.AuthTokens
 // @Failure 400 {object} models.Error
 // @Router /api/v1/auth/login [post]
-func (this *AuthHandler) LogIn(c *gin.Context) {
+func (h *AuthHandler) LogIn(c *gin.Context) {
 	var request models.LoginUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		this.Logger.Error("Error while binding json", zap.Error(err), zap.Any("request", c.Request.Body))
+		h.Logger.Error("Error while binding json", zap.Error(err), zap.Any("request", c.Request.Body))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})
 		return
 	}
@@ -68,9 +68,9 @@ func (this *AuthHandler) LogIn(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), kDefaultTimeout)
 	defer cancel()
 
-	tokens, err := this.AuthenticationService.LogIn(ctx, request)
+	tokens, err := h.AuthenticationService.LogIn(ctx, request)
 	if err != nil {
-		this.Logger.Error("Error while logging in user", zap.Error(err), zap.Any("request", request))
+		h.Logger.Error("Error while logging in user", zap.Error(err), zap.Any("request", request))
 		c.JSON(http.StatusBadRequest, models.Error{Message: err.Error()})
 		return
 	}
@@ -78,6 +78,6 @@ func (this *AuthHandler) LogIn(c *gin.Context) {
 	c.JSON(http.StatusOK, tokens)
 }
 
-func (this *AuthHandler) LogOut(c *gin.Context) {
+func (h *AuthHandler) LogOut(c *gin.Context) {
 
 }

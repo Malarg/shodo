@@ -21,28 +21,28 @@ type RegistrationService struct {
 	TokensService   *TokensService
 }
 
-func (this *RegistrationService) Register(ctx context.Context, request models.RegisterUserRequest) (*models.AuthTokens, error) {
-	if err := this.checkIfCanRegister(ctx, request); err != nil {
+func (s *RegistrationService) Register(ctx context.Context, request models.RegisterUserRequest) (*models.AuthTokens, error) {
+	if err := s.checkIfCanRegister(ctx, request); err != nil {
 		return nil, err
 	}
 
-	userId, err := this.createUser(ctx, request)
+	userId, err := s.createUser(ctx, request)
 	if err != nil {
 		return nil, err
 	}
 
-	tokens, err := this.TokensService.GenerateAndSaveTokens(userId)
+	tokens, err := s.TokensService.GenerateAndSaveTokens(userId)
 	if err != nil {
-		this.Repository.DeleteUser(ctx, userId)
+		s.Repository.DeleteUser(ctx, userId)
 		return nil, err
 	}
 
-	this.TaskListService.CreateDefaultTaskList(ctx, request.Username, userId)
+	s.TaskListService.CreateDefaultTaskList(ctx, request.Username, userId)
 	return tokens, nil
 }
 
-func (this *RegistrationService) checkIfCanRegister(ctx context.Context, request models.RegisterUserRequest) error {
-	userExists, err := this.Repository.CheckUserExists(ctx, request.Email)
+func (s *RegistrationService) checkIfCanRegister(ctx context.Context, request models.RegisterUserRequest) error {
+	userExists, err := s.Repository.CheckUserExists(ctx, request.Email)
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func (this *RegistrationService) checkIfCanRegister(ctx context.Context, request
 	return nil
 }
 
-func (this *RegistrationService) createUser(ctx context.Context, request models.RegisterUserRequest) (string, error) {
+func (s *RegistrationService) createUser(ctx context.Context, request models.RegisterUserRequest) (string, error) {
 	hashedPassword, err := hashPassword(request.Password)
 	if err != nil {
 		return "", err
@@ -70,7 +70,7 @@ func (this *RegistrationService) createUser(ctx context.Context, request models.
 		Password: hashedPassword,
 	}
 
-	return this.Repository.CreateUser(ctx, user)
+	return s.Repository.CreateUser(ctx, user)
 }
 
 const (
@@ -78,11 +78,14 @@ const (
 )
 
 func hashPassword(password string) (string, error) {
-	if len(password) > 36 {
+	if len(password) > 72 {
 		ErrPasswordTooLong := errors.New("password length should not exceed 72 bytes")
 		return "", ErrPasswordTooLong
 	}
 
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), DefaultCost)
+	if err != nil {
+		return "", err
+	}
 	return string(bytes), err
 }

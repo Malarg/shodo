@@ -12,13 +12,13 @@ type TokensRepository struct {
 	Redis *redis.Client
 }
 
-func (this *TokensRepository) SaveTokens(userId string, tokens *models.AuthTokens) error {
-	status := this.Redis.Set(userId+"_access", tokens.Access, t.AccessTokenLifeTime*time.Second)
+func (r *TokensRepository) SaveTokens(userId string, tokens *models.AuthTokens) error {
+	status := r.Redis.Set(userId+"_access", tokens.Access, t.AccessTokenLifeTime*time.Second)
 	if status.Err() != nil {
 		return status.Err()
 	}
 
-	status = this.Redis.Set(userId+"_refresh", tokens.Refresh, t.RefreshTokenLifeTime*time.Second)
+	status = r.Redis.Set(userId+"_refresh", tokens.Refresh, t.RefreshTokenLifeTime*time.Second)
 	if status.Err() != nil {
 		return status.Err()
 	}
@@ -26,13 +26,13 @@ func (this *TokensRepository) SaveTokens(userId string, tokens *models.AuthToken
 	return nil
 }
 
-func (this *TokensRepository) GetTokens(userId string) (*models.AuthTokens, error) {
-	access, err := this.Redis.Get(userId + "_access").Result()
+func (r *TokensRepository) GetTokens(userId string) (*models.AuthTokens, error) {
+	access, err := r.Redis.Get(userId + "_access").Result()
 	if err != nil {
 		return nil, err
 	}
 
-	refresh, err := this.Redis.Get(userId + "_refresh").Result()
+	refresh, err := r.Redis.Get(userId + "_refresh").Result()
 	if err != nil {
 		return nil, err
 	}

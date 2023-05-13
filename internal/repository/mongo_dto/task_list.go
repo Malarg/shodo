@@ -14,35 +14,35 @@ type TaskList struct {
 	Tasks      []Task `bson:"tasks,omitempty"`
 }
 
-func (this *TaskList) New() {
-	this.ID = primitive.ObjectID{}
-	this.Title = ""
-	this.Owner = primitive.ObjectID{}
-	this.SharedWith = []primitive.ObjectID{}
-	this.Tasks = []Task{}
+func (l *TaskList) New() {
+	l.ID = primitive.ObjectID{}
+	l.Title = ""
+	l.Owner = primitive.ObjectID{}
+	l.SharedWith = []primitive.ObjectID{}
+	l.Tasks = []Task{}
 }
 
-func (this *TaskList) ToModel() models.TaskList {
+func (l *TaskList) ToModel() models.TaskList {
 	return models.TaskList{
-		ID:         this.ID.Hex(),
-		Title:      this.Title,
-		Owner:      this.Owner.Hex(),
-		SharedWith: parseIdList(this.SharedWith),
-		Tasks:      dtoTasksToModelTasks(this.Tasks),
+		ID:         l.ID.Hex(),
+		Title:      l.Title,
+		Owner:      l.Owner.Hex(),
+		SharedWith: parseIdList(l.SharedWith),
+		Tasks:      dtoTasksToModelTasks(l.Tasks),
 	}
 }
 
-func (this *TaskList) ToShortModel() models.TaskListShort {
+func (l *TaskList) ToShortModel() models.TaskListShort {
 	return models.TaskListShort{
-		ID:    this.ID.Hex(),
-		Title: this.Title,
-		Owner: this.Owner.Hex(),
+		ID:    l.ID.Hex(),
+		Title: l.Title,
+		Owner: l.Owner.Hex(),
 	}
 }
 
-func (this *TaskList) FromModel(taskList models.TaskList) error {
+func (l *TaskList) FromModel(taskList models.TaskList) error {
 	var err error
-	this.ID, err = parseOrCreateId(taskList.ID)
+	l.ID, err = parseOrCreateId(taskList.ID)
 	if err != nil {
 		return err
 	}
@@ -52,9 +52,9 @@ func (this *TaskList) FromModel(taskList models.TaskList) error {
 		return err
 	}
 
-	this.Title = taskList.Title
-	this.Owner = ownerId
-	this.Tasks = modelTasksToDtoTasks(taskList.Tasks)
+	l.Title = taskList.Title
+	l.Owner = ownerId
+	l.Tasks = modelTasksToDtoTasks(taskList.Tasks)
 
 	return nil
 }

@@ -12,11 +12,11 @@ type UsersService struct {
 	UsersRepository *repository.UsersRepository
 }
 
-func (this *UsersService) GetAllUsers(ctx context.Context, userToken string) ([]models.UserShort, error) {
+func (s *UsersService) GetAllUsers(ctx context.Context, userToken string) ([]models.UserShort, error) {
 	userId, err := tokens.GetUserIdFromToken(userToken)
 	if err != nil {
 		return nil, err
 	}
 
-	return this.UsersRepository.GetAllUsers(ctx, userId)
+	return s.UsersRepository.GetAllUsers(ctx, userId)
 }
