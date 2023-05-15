@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	kDefaultTaskListTitle = "Shoppings"
-	kNotAllowed           = "operation permitted only for list owner or shared users"
+	defaultTaskListTitle = "Shoppings"
+	notAllowedMessage    = "operation permitted only for list owner or shared users"
 )
 
 type TaskListService struct {
@@ -22,7 +22,7 @@ type TaskListService struct {
 }
 
 func (s *TaskListService) CreateDefaultTaskList(ctx context.Context, username, ownerId string) {
-	s.TaskListRepository.CreateTaskList(ctx, &models.TaskList{Title: username + " " + kDefaultTaskListTitle, Owner: ownerId})
+	s.TaskListRepository.CreateTaskList(ctx, &models.TaskList{Title: username + " " + defaultTaskListTitle, Owner: ownerId})
 }
 
 func (s *TaskListService) CreateTaskList(ctx context.Context, list *models.TaskList) {
@@ -50,7 +50,7 @@ func (s *TaskListService) GetTaskList(ctx context.Context, listId *string, userT
 	}
 
 	if !isEditListAllowed {
-		return models.TaskList{}, &models.Error{Code: http.StatusForbidden, Message: kNotAllowed}
+		return models.TaskList{}, &models.Error{Code: http.StatusForbidden, Message: notAllowedMessage}
 	}
 
 	resp, err := s.TaskListRepository.GetTaskList(ctx, listId)
@@ -73,7 +73,7 @@ func (s *TaskListService) AddTaskToList(ctx context.Context, listId *string, tas
 	}
 
 	if !isEditListAllowed {
-		return nil, &models.Error{Code: http.StatusForbidden, Message: kNotAllowed}
+		return nil, &models.Error{Code: http.StatusForbidden, Message: notAllowedMessage}
 	}
 
 	taskId, err := s.TaskListRepository.AddTaskToList(ctx, listId, task)
@@ -101,7 +101,7 @@ func (s *TaskListService) RemoveTaskFromList(ctx context.Context, listId *string
 	}
 
 	if !isEditListAllowed {
-		return &models.Error{Code: http.StatusForbidden, Message: kNotAllowed}
+		return &models.Error{Code: http.StatusForbidden, Message: notAllowedMessage}
 	}
 
 	err = s.TaskListRepository.RemoveTaskFromList(ctx, listId, taskId)

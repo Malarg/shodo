@@ -14,14 +14,6 @@ type TaskList struct {
 	Tasks      []Task `bson:"tasks,omitempty"`
 }
 
-func (l *TaskList) New() {
-	l.ID = primitive.ObjectID{}
-	l.Title = ""
-	l.Owner = primitive.ObjectID{}
-	l.SharedWith = []primitive.ObjectID{}
-	l.Tasks = []Task{}
-}
-
 func (l *TaskList) ToModel() models.TaskList {
 	return models.TaskList{
 		ID:         l.ID.Hex(),
