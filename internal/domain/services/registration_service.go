@@ -48,7 +48,7 @@ func (s *RegistrationService) checkIfCanRegister(ctx context.Context, request mo
 	}
 
 	if userExists {
-		return errors.New(fmt.Sprintf("user with email %s already exists", request.Email))
+		return fmt.Errorf("user with email %s already exists", request.Email)
 	}
 
 	if len(request.Password) < MinPasswordLength {
