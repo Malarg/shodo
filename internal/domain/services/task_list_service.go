@@ -84,29 +84,29 @@ func (s *TaskListService) AddTaskToList(ctx context.Context, listId *string, tas
 	return taskId, nil
 }
 
-func (s *TaskListService) RemoveTaskFromList(ctx context.Context, listId *string, taskId *string, userToken string) *models.Error {
+func (s *TaskListService) RemoveTaskFromList(ctx context.Context, listId *string, taskId *string, userToken string) error {
 	isListExists, err := s.TaskListRepository.CheckTaskListExists(ctx, *listId)
 	if !isListExists {
-		return &models.Error{Code: http.StatusNotFound, Message: "list not found"}
+		return &ListNotFoundError{ListId: *listId}
 	}
 
 	isTaskExists, err := s.TaskListRepository.CheckTaskExists(ctx, *listId, *taskId)
 	if !isTaskExists {
-		return &models.Error{Code: http.StatusNotFound, Message: "task not found"}
+		return &TaskNotFoundError{TaskId: *taskId}
 	}
 
 	isEditListAllowed, err := s.IsEditListAllowed(ctx, listId, userToken)
 	if err != nil {
-		return &models.Error{Code: http.StatusInternalServerError, Message: err.Error()}
+		return &InternalError{Err: err}
 	}
 
 	if !isEditListAllowed {
-		return &models.Error{Code: http.StatusForbidden, Message: notAllowedMessage}
+		return &NotAllowedError{}
 	}
 
 	err = s.TaskListRepository.RemoveTaskFromList(ctx, listId, taskId)
 	if err != nil {
-		return &models.Error{Code: http.StatusInternalServerError, Message: err.Error()}
+		return &InternalError{Err: err}
 	}
 
 	return nil

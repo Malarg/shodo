@@ -2,6 +2,7 @@ package transport
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"shodo/internal/domain/services"
 	"shodo/models"
@@ -119,7 +120,25 @@ func (h *TaskListHandler) DeleteTaskFromList(c *gin.Context) {
 	serviceError := h.TaskListService.RemoveTaskFromList(ctx, &request.ListId, &request.TaskId, token)
 	if serviceError != nil {
 		h.Logger.Error("Error while removing task from list", zap.Error(err), zap.Any("request", request))
-		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
+
+		var code int
+
+		fmt.Println("###########" + serviceError.Error())
+
+		switch serviceError.(type) {
+		case *services.TaskNotFoundError:
+			code = http.StatusNotFound
+		case *services.ListNotFoundError:
+			code = http.StatusNotFound
+		case *services.NotAllowedError:
+			code = http.StatusForbidden
+		case *services.InternalError:
+			code = http.StatusInternalServerError
+		default:
+			code = http.StatusBadRequest
+		}
+
+		c.JSON(code, gin.H{"error": serviceError.Error()})
 		return
 	}
 
