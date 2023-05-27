@@ -2,7 +2,6 @@ package transport
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"shodo/internal/domain/services"
 	"shodo/models"
@@ -34,7 +33,7 @@ func (h *TaskListHandler) GetLists(c *gin.Context) {
 	token := c.Request.Header.Get(Authorization)
 	isAuthorized, err := h.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, &models.Error{Message: "unauthorized"})
 		return
 	}
 
@@ -44,7 +43,7 @@ func (h *TaskListHandler) GetLists(c *gin.Context) {
 	lists, err := h.TaskListService.GetTaskLists(ctx, token)
 	if err != nil {
 		h.Logger.Error("Error while getting lists", zap.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, &models.Error{Message: err.Error()})
 		return
 	}
 
@@ -65,14 +64,14 @@ func (h *TaskListHandler) AddTaskToList(c *gin.Context) {
 	token := c.Request.Header.Get(Authorization)
 	isAuthorized, err := h.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, &models.Error{Message: "unauthorized"})
 		return
 	}
 
 	var request models.AddTaskRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		h.Logger.Error("Error while binding add task json", zap.Error(err), zap.Any("request", c.Request.Body))
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, &models.Error{Message: err.Error()})
 		return
 	}
 
@@ -82,7 +81,7 @@ func (h *TaskListHandler) AddTaskToList(c *gin.Context) {
 	res, serviceError := h.TaskListService.AddTaskToList(ctx, &request.ListId, &request.Task, token)
 	if serviceError != nil {
 		h.Logger.Error("Error while adding task to list", zap.Error(err), zap.Any("request", request))
-		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
+		c.JSON(getErrorCode(serviceError), &models.Error{Message: serviceError.Error()})
 		return
 	}
 
@@ -103,14 +102,14 @@ func (h *TaskListHandler) DeleteTaskFromList(c *gin.Context) {
 	token := c.Request.Header.Get(Authorization)
 	isAuthorized, err := h.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, &models.Error{Message: "unauthorized"})
 		return
 	}
 
 	var request models.RemoveTaskRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		h.Logger.Error("Error while binding delete task json", zap.Error(err), zap.Any("request", c.Request.Body))
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, &models.Error{Message: err.Error()})
 		return
 	}
 
@@ -121,24 +120,7 @@ func (h *TaskListHandler) DeleteTaskFromList(c *gin.Context) {
 	if serviceError != nil {
 		h.Logger.Error("Error while removing task from list", zap.Error(err), zap.Any("request", request))
 
-		var code int
-
-		fmt.Println("###########" + serviceError.Error())
-
-		switch serviceError.(type) {
-		case *services.TaskNotFoundError:
-			code = http.StatusNotFound
-		case *services.ListNotFoundError:
-			code = http.StatusNotFound
-		case *services.NotAllowedError:
-			code = http.StatusForbidden
-		case *services.InternalError:
-			code = http.StatusInternalServerError
-		default:
-			code = http.StatusBadRequest
-		}
-
-		c.JSON(code, gin.H{"error": serviceError.Error()})
+		c.JSON(getErrorCode(serviceError), &models.Error{Message: serviceError.Error()})
 		return
 	}
 
@@ -158,7 +140,7 @@ func (h *TaskListHandler) GetTaskList(c *gin.Context) {
 	token := c.Request.Header.Get(Authorization)
 	isAuthorized, err := h.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, &models.Error{Message: "unauthorized"})
 		return
 	}
 
@@ -170,7 +152,7 @@ func (h *TaskListHandler) GetTaskList(c *gin.Context) {
 	list, serviceError := h.TaskListService.GetTaskList(ctx, &listId, token)
 	if serviceError != nil {
 		h.Logger.Error("Error while getting list", zap.Any("error", serviceError), zap.Any("listId", listId))
-		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
+		c.JSON(getErrorCode(serviceError), &models.Error{Message: serviceError.Error()})
 		return
 	}
 
@@ -191,14 +173,14 @@ func (h *TaskListHandler) StartShareWithUser(c *gin.Context) {
 	token := c.Request.Header.Get(Authorization)
 	isAuthorized, err := h.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, &models.Error{Message: "unauthorized"})
 		return
 	}
 
 	var request models.ShareListRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		h.Logger.Error("Error while binding start share json", zap.Error(err), zap.Any("request", c.Request.Body))
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, &models.Error{Message: err.Error()})
 		return
 	}
 
@@ -208,7 +190,7 @@ func (h *TaskListHandler) StartShareWithUser(c *gin.Context) {
 	serviceError := h.TaskListService.StartShareWithUser(ctx, &request.ListId, &request.Email, token)
 	if serviceError != nil {
 		h.Logger.Error("Error while sharing list with user", zap.Error(err), zap.Any("request", request))
-		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
+		c.JSON(getErrorCode(serviceError), &models.Error{Message: serviceError.Error()})
 		return
 	}
 
@@ -229,14 +211,14 @@ func (h *TaskListHandler) StopShareWithUser(c *gin.Context) {
 	token := c.Request.Header.Get(Authorization)
 	isAuthorized, err := h.AuthenticationService.IsAuthorized(token)
 	if !isAuthorized || err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, &models.Error{Message: "unauthorized"})
 		return
 	}
 
 	var request models.ShareListRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		h.Logger.Error("Error while binding sop share json", zap.Error(err), zap.Any("request", c.Request.Body))
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, &models.Error{Message: err.Error()})
 		return
 	}
 
@@ -246,9 +228,26 @@ func (h *TaskListHandler) StopShareWithUser(c *gin.Context) {
 	serviceError := h.TaskListService.StopShareWithUser(ctx, &request.ListId, &request.Email, token)
 	if serviceError != nil {
 		h.Logger.Error("Error while stop share list with user", zap.Error(err), zap.Any("request", request))
-		c.JSON(serviceError.Code, gin.H{"error": serviceError.Message})
+		c.JSON(getErrorCode(serviceError), &models.Error{Message: serviceError.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+func getErrorCode(serviceError error) int {
+	var code int
+	switch serviceError.(type) {
+	case *services.TaskNotFoundError:
+		code = http.StatusNotFound
+	case *services.ListNotFoundError:
+		code = http.StatusNotFound
+	case *services.NotAllowedError:
+		code = http.StatusForbidden
+	case *services.InternalError:
+		code = http.StatusInternalServerError
+	default:
+		code = http.StatusBadRequest
+	}
+	return code
 }

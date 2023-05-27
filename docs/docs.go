@@ -372,9 +372,6 @@ const docTemplate = `{
         "models.Error": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "integer"
-                },
                 "message": {
                     "type": "string"
                 }
